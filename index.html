@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LIHTC Tools — HSnellings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07111f;--surf:#0c1a2e;--panel:#0f2040;--border:#1a3356;--muted:#0d1e35;
+  --green:#10b981;--blue:#38bdf8;--amber:#f59e0b;--red:#f43f5e;--purple:#a78bfa;
+  --text:#dde8f5;--dim:#5e7a9c;--dimmer:#2d4a6a;
+}
+body{
+  font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);
+  min-height:100vh;display:flex;flex-direction:column;
+}
+
+/* ── HEADER ─────────────────────────────────────────────────────── */
+header{
+  background:var(--surf);border-bottom:1px solid var(--border);
+  padding:18px 40px;display:flex;align-items:center;gap:16px;
+}
+.logo{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:700;letter-spacing:.07em}
+.logo span{color:var(--green)}
+.tagline{font-size:13px;color:var(--dim);border-left:1px solid var(--border);padding-left:16px}
+
+/* ── HERO ────────────────────────────────────────────────────────── */
+.hero{
+  padding:64px 40px 48px;text-align:center;max-width:700px;margin:0 auto;
+}
+.hero-eyebrow{
+  font-family:'Fira Code',monospace;font-size:11px;font-weight:500;
+  color:var(--green);letter-spacing:.15em;text-transform:uppercase;margin-bottom:18px;
+}
+.hero-title{
+  font-family:'Barlow Condensed',sans-serif;font-size:48px;font-weight:700;
+  letter-spacing:.03em;line-height:1.1;margin-bottom:18px;
+}
+.hero-title span{color:var(--green)}
+.hero-sub{font-size:15px;color:var(--dim);line-height:1.7;max-width:520px;margin:0 auto}
+
+/* ── TOOL CARDS ──────────────────────────────────────────────────── */
+.tools-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:20px;
+  max-width:1060px;margin:0 auto;padding:0 40px 64px;flex:1;
+  align-content:start;
+}
+.tool-card{
+  background:var(--surf);border:1px solid var(--border);border-radius:14px;
+  overflow:hidden;display:flex;flex-direction:column;
+  transition:transform .2s,border-color .2s,box-shadow .2s;
+  text-decoration:none;color:inherit;
+}
+.tool-card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 16px 48px rgba(0,0,0,.5);
+}
+.tool-card.green:hover{border-color:var(--green)}
+.tool-card.blue:hover{border-color:var(--blue)}
+.tool-card.purple:hover{border-color:var(--purple)}
+
+.card-accent{height:4px}
+.card-accent.green{background:linear-gradient(90deg,var(--green),#34d399)}
+.card-accent.blue{background:linear-gradient(90deg,var(--blue),#7dd3fc)}
+.card-accent.purple{background:linear-gradient(90deg,var(--purple),#c4b5fd)}
+
+.card-body{padding:26px 26px 20px;flex:1;display:flex;flex-direction:column;gap:14px}
+.card-icon{font-size:32px;line-height:1}
+.card-title{
+  font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;
+  letter-spacing:.04em;
+}
+.card-desc{font-size:13px;color:var(--dim);line-height:1.65;flex:1}
+
+.card-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.tag{
+  font-family:'Fira Code',monospace;font-size:10px;font-weight:500;
+  padding:3px 9px;border-radius:4px;letter-spacing:.04em;
+}
+.tag.green{background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.3)}
+.tag.blue{background:rgba(56,189,248,.12);color:var(--blue);border:1px solid rgba(56,189,248,.25)}
+.tag.amber{background:rgba(245,158,11,.12);color:var(--amber);border:1px solid rgba(245,158,11,.25)}
+.tag.purple{background:rgba(167,139,250,.12);color:var(--purple);border:1px solid rgba(167,139,250,.25)}
+.tag.dim{background:rgba(94,122,156,.12);color:var(--dim);border:1px solid rgba(94,122,156,.25)}
+
+.card-footer{
+  padding:14px 26px;border-top:1px solid var(--muted);
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:12px;
+}
+.card-cta{font-weight:600;display:flex;align-items:center;gap:6px}
+.card-cta.green{color:var(--green)}
+.card-cta.blue{color:var(--blue)}
+.card-cta.purple{color:var(--purple)}
+.card-cta .arrow{transition:transform .2s}
+.tool-card:hover .arrow{transform:translateX(4px)}
+.card-note{color:var(--dimmer);font-size:11px}
+
+/* ── DATA SOURCES STRIP ──────────────────────────────────────────── */
+.data-strip{
+  background:var(--surf);border-top:1px solid var(--border);
+  padding:20px 40px;display:flex;align-items:center;justify-content:center;
+  gap:32px;flex-wrap:wrap;
+}
+.ds-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--dim)}
+.ds-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* ── FOOTER ──────────────────────────────────────────────────────── */
+footer{
+  background:var(--muted);border-top:1px solid var(--border);
+  padding:16px 40px;text-align:center;font-size:11px;color:var(--dimmer);
+}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.hero{animation:fadeUp .4s ease}
+.tools-grid{animation:fadeUp .5s ease .1s both}
+
+@media(max-width:800px){
+  .tools-grid{grid-template-columns:1fr;padding:0 20px 40px}
+  .hero{padding:40px 20px 32px}
+  header{padding:14px 20px}
+  .data-strip{gap:16px;padding:16px 20px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">LIHTC <span>TOOLS</span></div>
+  <div class="tagline">Affordable Housing Development Analytics</div>
+</header>
+
+<div class="hero">
+  <div class="hero-eyebrow">Affordable Housing Development</div>
+  <div class="hero-title">LIHTC <span>Analytics</span> Suite</div>
+  <div class="hero-sub">
+    Three tools for underwriting Low-Income Housing Tax Credit deals —
+    powered by live HUD 2026 data, the US Census Bureau, and AI-driven market research.
+  </div>
+</div>
+
+<div class="tools-grid">
+
+  <!-- LIHTC SCANNER -->
+  <a href="lihtc_scanner.html" class="tool-card green">
+    <div class="card-accent green"></div>
+    <div class="card-body">
+      <div class="card-icon">🗺</div>
+      <div class="card-title">QCT / DDA Scanner</div>
+      <div class="card-desc">
+        Upload a Crexi property export CSV and instantly identify which listings
+        fall within HUD 2026 Qualified Census Tracts and Difficult Development
+        Areas. Geocodes via US Census Bureau and checks against live HUD ArcGIS
+        polygon layers.
+      </div>
+      <div class="card-tags">
+        <span class="tag green">2026 QCT</span>
+        <span class="tag green">2026 DDA</span>
+        <span class="tag dim">Crexi CSV</span>
+        <span class="tag dim">Batch Geocoding</span>
+      </div>
+    </div>
+    <div class="card-footer">
+      <span class="card-cta green">Open Scanner <span class="arrow">→</span></span>
+      <span class="card-note">No API key required</span>
+    </div>
+  </a>
+
+  <!-- FEASIBILITY TOOL -->
+  <a href="lihtc_feasibility.html" class="tool-card blue">
+    <div class="card-accent blue"></div>
+    <div class="card-body">
+      <div class="card-icon">📊</div>
+      <div class="card-title">Feasibility Tool</div>
+      <div class="card-desc">
+        Enter a project address to auto-populate a full 4% or 9% LIHTC feasibility
+        model with live HUD 2026 income limits, fair market rents, and AI-researched
+        comp rents from actual LIHTC properties in your market. Outputs Sources &amp;
+        Uses, DSCR, LTV, tax credit equity, and sensitivity analysis.
+      </div>
+      <div class="card-tags">
+        <span class="tag blue">Live HUD 2026 Data</span>
+        <span class="tag amber">LIHTC Comps</span>
+        <span class="tag dim">4% &amp; 9%</span>
+        <span class="tag dim">S&amp;U · DSCR · LTV</span>
+      </div>
+    </div>
+    <div class="card-footer">
+      <span class="card-cta blue">Open Feasibility Tool <span class="arrow">→</span></span>
+      <span class="card-note">HUD token required</span>
+    </div>
+  </a>
+
+  <!-- SETUP GUIDE -->
+  <a href="setup_guide.html" class="tool-card purple">
+    <div class="card-accent purple"></div>
+    <div class="card-body">
+      <div class="card-icon">🔑</div>
+      <div class="card-title">API Setup Guide</div>
+      <div class="card-desc">
+        Step-by-step instructions for obtaining your free HUD USER API token
+        (required for live 2026 income limits and FMRs) and your optional
+        Anthropic API key (enables live LIHTC comp rent research). Includes FAQ
+        and quick-reference links.
+      </div>
+      <div class="card-tags">
+        <span class="tag blue">HUD TOKEN</span>
+        <span class="tag purple">ANTHROPIC KEY</span>
+        <span class="tag dim">Free Setup</span>
+      </div>
+    </div>
+    <div class="card-footer">
+      <span class="card-cta purple">Read Setup Guide <span class="arrow">→</span></span>
+      <span class="card-note">5-minute setup</span>
+    </div>
+  </a>
+
+</div>
+
+<div class="data-strip">
+  <div class="ds-item"><div class="ds-dot" style="background:var(--blue)"></div>HUD USER API — 2026 Income Limits &amp; FMRs</div>
+  <div class="ds-item"><div class="ds-dot" style="background:var(--green)"></div>HUD ArcGIS — 2026 QCT &amp; DDA Polygons</div>
+  <div class="ds-item"><div class="ds-dot" style="background:var(--amber)"></div>US Census Bureau Geocoder</div>
+  <div class="ds-item"><div class="ds-dot" style="background:var(--purple)"></div>Anthropic Claude — LIHTC Comp Research</div>
+</div>
+
+<footer>
+  LIHTC Tools · Built for affordable housing development underwriting ·
+  Data: HUD, US Census Bureau, Anthropic
+</footer>
+
+</body>
+</html>

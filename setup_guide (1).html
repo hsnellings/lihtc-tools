@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LIHTC Feasibility Tool — Setup Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07111f;--surf:#0c1a2e;--panel:#0f2040;--border:#1a3356;--muted:#0d1e35;
+  --green:#10b981;--blue:#38bdf8;--amber:#f59e0b;--red:#f43f5e;
+  --text:#dde8f5;--dim:#5e7a9c;--dimmer:#2d4a6a;
+}
+body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.6}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ── HEADER ─────────────────────────────────────── */
+.page-header{
+  background:var(--surf);border-bottom:1px solid var(--border);
+  padding:20px 40px;display:flex;align-items:center;gap:16px;
+}
+.logo{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;letter-spacing:.07em}
+.logo span{color:var(--green)}
+.doc-title{font-size:14px;color:var(--dim);border-left:1px solid var(--border);padding-left:16px}
+
+/* ── LAYOUT ─────────────────────────────────────── */
+.container{max-width:820px;margin:0 auto;padding:48px 32px}
+
+/* ── INTRO ──────────────────────────────────────── */
+.intro{
+  background:var(--surf);border:1px solid var(--border);border-radius:12px;
+  padding:28px 32px;margin-bottom:40px;
+}
+.intro h1{
+  font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;
+  letter-spacing:.04em;margin-bottom:10px;
+}
+.intro p{color:var(--dim);line-height:1.7;margin-bottom:14px}
+.intro p:last-child{margin-bottom:0}
+
+/* Key status row */
+.key-row{
+  display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px;
+}
+.key-card{
+  border-radius:10px;padding:16px 18px;display:flex;flex-direction:column;gap:6px;
+}
+.key-card.required{background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.3)}
+.key-card.optional{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25)}
+.kc-label{font-size:10px;font-weight:700;letter-spacing:.1em}
+.kc-label.req{color:var(--blue)}
+.kc-label.opt{color:var(--green)}
+.kc-name{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700}
+.kc-desc{font-size:12px;color:var(--dim);line-height:1.5}
+.kc-cost{font-size:11px;font-weight:600;margin-top:4px}
+.kc-cost.free{color:var(--green)}
+
+/* ── SECTION ─────────────────────────────────────── */
+.section{margin-bottom:48px}
+.section-header{
+  display:flex;align-items:center;gap:14px;margin-bottom:24px;
+  padding-bottom:14px;border-bottom:2px solid var(--border);
+}
+.section-num{
+  width:36px;height:36px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-family:'Barlow Condensed',sans-serif;
+  font-size:18px;font-weight:700;flex-shrink:0;
+}
+.num-blue{background:rgba(56,189,248,.15);border:2px solid rgba(56,189,248,.4);color:var(--blue)}
+.num-green{background:rgba(16,185,129,.12);border:2px solid rgba(16,185,129,.35);color:var(--green)}
+.section-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;letter-spacing:.04em}
+.section-subtitle{font-size:12px;color:var(--dim);margin-top:2px}
+
+/* ── STEPS ───────────────────────────────────────── */
+.steps{display:flex;flex-direction:column;gap:16px}
+.step{
+  background:var(--surf);border:1px solid var(--border);border-radius:10px;
+  padding:20px 22px;display:flex;gap:18px;
+}
+.step-num{
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;flex-shrink:0;margin-top:2px;
+}
+.sn-blue{background:var(--blue);color:#000}
+.sn-green{background:var(--green);color:#000}
+.step-content{flex:1;min-width:0}
+.step-title{font-size:14px;font-weight:600;margin-bottom:6px}
+.step-body{font-size:13px;color:var(--dim);line-height:1.65}
+.step-body p{margin-bottom:8px}
+.step-body p:last-child{margin-bottom:0}
+
+/* URL chips */
+.url-chip{
+  display:inline-flex;align-items:center;gap:7px;
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:7px;padding:7px 14px;margin:8px 0;font-size:12px;
+}
+.url-chip a{font-family:'Fira Code',monospace;color:var(--blue)}
+.url-chip .arrow{color:var(--dimmer)}
+
+/* Screenshot placeholder / callout */
+.callout{
+  background:var(--panel);border-left:3px solid var(--blue);
+  border-radius:0 8px 8px 0;padding:12px 16px;margin:10px 0;
+  font-size:12px;color:var(--dim);line-height:1.6;
+}
+.callout.amber{border-left-color:var(--amber)}
+.callout.green{border-left-color:var(--green)}
+.callout strong{color:var(--text)}
+
+/* UI mock */
+.ui-mock{
+  background:var(--panel);border:1px solid var(--border);border-radius:8px;
+  padding:14px 16px;margin:10px 0;font-family:'Fira Code',monospace;font-size:11px;
+  color:var(--dim);line-height:1.8;
+}
+.ui-mock .field-label{color:var(--blue);font-weight:500}
+.ui-mock .field-label.green{color:var(--green)}
+.ui-mock .placeholder{color:var(--dimmer);font-style:italic}
+.ui-mock .status-ok{color:var(--green)}
+
+/* ── USING IN TOOL ───────────────────────────────── */
+.usage-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+.usage-card{
+  background:var(--surf);border:1px solid var(--border);border-radius:10px;
+  padding:18px 20px;
+}
+.uc-title{font-size:12px;font-weight:700;color:var(--dim);letter-spacing:.08em;margin-bottom:10px}
+.uc-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;font-size:12px}
+.uc-item:last-child{margin-bottom:0}
+.uc-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:4px}
+
+/* ── FAQ ─────────────────────────────────────────── */
+.faq{display:flex;flex-direction:column;gap:12px;margin-top:8px}
+.faq-item{background:var(--surf);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.faq-q{padding:14px 18px;font-size:13px;font-weight:600;color:var(--text)}
+.faq-a{padding:0 18px 14px;font-size:12px;color:var(--dim);line-height:1.65;border-top:1px solid var(--muted);padding-top:12px}
+
+/* ── FOOTER ──────────────────────────────────────── */
+footer{
+  background:var(--surf);border-top:1px solid var(--border);
+  padding:20px 40px;text-align:center;font-size:12px;color:var(--dimmer);
+  margin-top:48px;
+}
+
+@media(max-width:640px){
+  .key-row,.usage-grid{grid-template-columns:1fr}
+  .container{padding:24px 16px}
+  .page-header{padding:16px 20px}
+}
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ──────────────────────────────────────────────────────── -->
+<div class="page-header">
+  <div class="logo">LIHTC <span>FEASIBILITY</span></div>
+  <div class="doc-title">API Credentials Setup Guide</div>
+  <a href="index.html" style="margin-left:auto;padding:5px 13px;border-radius:6px;font-size:12px;font-weight:600;font-family:'Barlow',sans-serif;border:1px solid #1a3356;color:#5e7a9c;text-decoration:none">← Home</a>
+</div>
+
+<!-- ── MAIN ────────────────────────────────────────────────────────── -->
+<div class="container">
+
+  <!-- INTRO -->
+  <div class="intro">
+    <h1>Getting Your API Keys</h1>
+    <p>
+      The LIHTC Feasibility Tool pulls <strong>live 2026 data</strong> from two sources.
+      Both credentials are free. The HUD token is required to run any analysis.
+      The Anthropic key is optional but enables real LIHTC comp rent research from actual properties in your market.
+    </p>
+    <div class="key-row">
+      <div class="key-card required">
+        <div class="kc-label req">REQUIRED</div>
+        <div class="kc-name">HUD USER API Token</div>
+        <div class="kc-desc">Provides exact 2026 HUD-published income limits and Fair Market Rents for your specific county or metro area. Same data HUD uses internally.</div>
+        <div class="kc-cost free">✓ Free — 5-minute registration, no payment</div>
+      </div>
+      <div class="key-card optional">
+        <div class="kc-label opt">OPTIONAL (RECOMMENDED)</div>
+        <div class="kc-name">Anthropic API Key</div>
+        <div class="kc-desc">Enables live research of actual LIHTC comp rents from properties that have leased up in your market, plus local construction cost data.</div>
+        <div class="kc-cost free">✓ Free account — small per-use cost (~$0.03–0.10 per analysis)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- PART 1: HUD TOKEN -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num num-blue">1</div>
+      <div>
+        <div class="section-title">HUD USER API Token</div>
+        <div class="section-subtitle">huduser.gov — free registration, instant token delivery</div>
+      </div>
+    </div>
+
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-num sn-blue">1</div>
+        <div class="step-content">
+          <div class="step-title">Go to the HUD User API registration page</div>
+          <div class="step-body">
+            <p>Open your browser and navigate to:</p>
+            <div class="url-chip">
+              <span class="arrow">→</span>
+              <a href="https://www.huduser.gov/portal/dataset/api/token" target="_blank">
+                huduser.gov/portal/dataset/api/token
+              </a>
+            </div>
+            <p>This is HUD's official developer API portal. No payment or credit card is required at any point.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num sn-blue">2</div>
+        <div class="step-content">
+          <div class="step-title">Fill in the registration form</div>
+          <div class="step-body">
+            <p>You will see a short form asking for:</p>
+            <p>
+              • <strong>First Name</strong> and <strong>Last Name</strong><br>
+              • <strong>Email address</strong> — use a professional email you check regularly<br>
+              • <strong>Organization</strong> — your company name is fine<br>
+              • <strong>Purpose</strong> — select "Affordable Housing / LIHTC Development" or similar
+            </p>
+            <div class="callout">
+              <strong>Note:</strong> HUD may ask you to verify your email address before issuing the token.
+              Check your inbox (and spam folder) after submitting.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num sn-blue">3</div>
+        <div class="step-content">
+          <div class="step-title">Receive and copy your token</div>
+          <div class="step-body">
+            <p>
+              After registration, HUD will display your API token on screen and/or email it to you.
+              The token is a long string of letters and numbers, typically 64 characters long. It looks like this:
+            </p>
+            <div class="ui-mock">
+              eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6ImE3...
+            </div>
+            <p>Click the <strong>Copy</strong> button on the page, or select all the text and copy it manually.</p>
+            <div class="callout amber">
+              <strong>Save this token</strong> — store it somewhere safe like a notes app or password manager.
+              If you lose it, you can return to the same page and generate a new one.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num sn-blue">4</div>
+        <div class="step-content">
+          <div class="step-title">Paste the token into the feasibility tool</div>
+          <div class="step-body">
+            <p>In the LIHTC Feasibility Tool, find the token field in the address bar area:</p>
+            <div class="ui-mock">
+              <span class="field-label">HUD Token *</span> &nbsp;
+              <span class="placeholder">[ paste your token here ]</span>
+            </div>
+            <p>Paste your token and you will see the status indicator update:</p>
+            <div class="ui-mock">
+              <span class="status-ok">✓ HUD</span> · ○ Comps: off
+            </div>
+            <div class="callout green">
+              <strong>The token is not stored anywhere</strong> — it lives only in your browser session.
+              You will need to paste it each time you open the tool, or bookmark the page with the token
+              pre-filled using a password manager's autofill.
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- What the HUD token gives you -->
+    <div style="margin-top:20px;background:var(--surf);border:1px solid var(--border);border-radius:10px;padding:20px 22px">
+      <div style="font-size:11px;font-weight:700;color:var(--dim);letter-spacing:.1em;margin-bottom:12px">WHAT THE HUD TOKEN PROVIDES</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px">
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <span style="color:var(--green);flex-shrink:0;margin-top:2px">✓</span>
+          <div>
+            <div style="font-weight:600;color:var(--text)">2026 Area Median Income (AMI)</div>
+            <div style="color:var(--dim)">Exact HUD-published figure for your specific county or MSA</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <span style="color:var(--green);flex-shrink:0;margin-top:2px">✓</span>
+          <div>
+            <div style="font-weight:600;color:var(--text)">2026 Income Limits by Household Size</div>
+            <div style="color:var(--dim)">50% AMI and 60% AMI limits for 1–8 person households</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <span style="color:var(--green);flex-shrink:0;margin-top:2px">✓</span>
+          <div>
+            <div style="font-weight:600;color:var(--text)">Maximum LIHTC Rents</div>
+            <div style="color:var(--dim)">Calculated using HUD's official formula (30% of income limit ÷ 12)</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <span style="color:var(--green);flex-shrink:0;margin-top:2px">✓</span>
+          <div>
+            <div style="font-weight:600;color:var(--text)">2026 Fair Market Rents (FMRs)</div>
+            <div style="color:var(--dim)">Studio, 1BR, 2BR, 3BR, 4BR for your metro area</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- PART 2: ANTHROPIC KEY -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num num-green">2</div>
+      <div>
+        <div class="section-title">Anthropic API Key</div>
+        <div class="section-subtitle">console.anthropic.com — enables live LIHTC comp rent research</div>
+      </div>
+    </div>
+
+    <div class="callout" style="margin-bottom:20px">
+      <strong>This key is optional.</strong> Without it, the tool still produces a fully populated feasibility model
+      using the live HUD data. The Anthropic key adds a second layer: Claude searches the web for actual LIHTC
+      properties that have leased up in your market and returns real comp rents, which may be below HUD
+      maximums in softer markets.
+    </div>
+
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-num sn-green">1</div>
+        <div class="step-content">
+          <div class="step-title">Create an Anthropic account</div>
+          <div class="step-body">
+            <p>Navigate to the Anthropic developer console:</p>
+            <div class="url-chip">
+              <span class="arrow">→</span>
+              <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>
+            </div>
+            <p>
+              Click <strong>Sign Up</strong> and register with your email address.
+              You can also sign in with a Google account.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num sn-green">2</div>
+        <div class="step-content">
+          <div class="step-title">Add a payment method (credit card)</div>
+          <div class="step-body">
+            <p>
+              Anthropic requires a credit card on file before issuing API keys.
+              You are only charged for actual usage — there is no monthly fee or minimum spend.
+            </p>
+            <p>
+              In the console, go to <strong>Settings → Billing</strong> and add a credit or debit card.
+            </p>
+            <div class="callout">
+              <strong>Estimated cost per feasibility analysis:</strong> $0.03–0.10 depending on how many
+              web searches are needed to find comp data. Running 20 analyses per month would cost
+              approximately $0.60–$2.00 total.
+            </div>
+            <p>
+              Anthropic lets you set a monthly spending limit (e.g. $10) so you are never surprised by a
+              large bill. Go to <strong>Settings → Limits</strong> to configure this.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num sn-green">3</div>
+        <div class="step-content">
+          <div class="step-title">Create an API key</div>
+          <div class="step-body">
+            <p>In the console left sidebar, click <strong>API Keys</strong>, then click <strong>Create Key</strong>.</p>
+            <p>
+              Give it a name for your records (e.g. "LIHTC Feasibility Tool") and click <strong>Create</strong>.
+            </p>
+            <p>Your key will appear <strong>once only</strong> — it looks like this:</p>
+            <div class="ui-mock">
+              sk-ant-api03-ABCDEFGHabcdefgh1234567890…
+            </div>
+            <div class="callout amber">
+              <strong>Copy the key immediately</strong> and store it in a safe place — you cannot view it again
+              after closing the dialog. If you lose it, simply create a new one. Old keys can be deleted from
+              the same screen.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num sn-green">4</div>
+        <div class="step-content">
+          <div class="step-title">Paste the key into the feasibility tool</div>
+          <div class="step-body">
+            <p>In the LIHTC Feasibility Tool, find the Anthropic key field next to the HUD token:</p>
+            <div class="ui-mock">
+              <span class="field-label green">Anthropic Key</span> &nbsp;
+              <span class="placeholder">[ paste your sk-ant-... key here ]</span>
+            </div>
+            <p>Both status indicators will turn green when both credentials are set:</p>
+            <div class="ui-mock">
+              <span class="status-ok">✓ HUD · ✓ Anthropic</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- What the Anthropic key gives you -->
+    <div style="margin-top:20px;background:var(--surf);border:1px solid var(--border);border-radius:10px;padding:20px 22px">
+      <div style="font-size:11px;font-weight:700;color:var(--dim);letter-spacing:.1em;margin-bottom:12px">WHAT THE ANTHROPIC KEY ADDS</div>
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:12px">
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <span style="color:var(--green);flex-shrink:0;margin-top:2px">✓</span>
+          <div>
+            <div style="font-weight:600;color:var(--text)">Live LIHTC comp rent research</div>
+            <div style="color:var(--dim)">Searches state HFA allocation listings, AffordableHousing.com, the National Housing Preservation Database (NHPD), and apartment listing sites for income-restricted properties that have recently leased up in your market. Returns actual rents tenants are paying — which may be below HUD maximums in softer markets or approaching them in undersupplied markets.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <span style="color:var(--green);flex-shrink:0;margin-top:2px">✓</span>
+          <div>
+            <div style="font-weight:600;color:var(--text)">Local construction cost data</div>
+            <div style="color:var(--dim)">Searches for recent project costs from local contractors, state affordable housing cost studies, and recent LIHTC award applications — more precise than the national RSMeans location factor.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <span style="color:var(--green);flex-shrink:0;margin-top:2px">✓</span>
+          <div>
+            <div style="font-weight:600;color:var(--text)">Market narrative</div>
+            <div style="color:var(--dim)">Generates a 2–3 sentence assessment of LIHTC demand, recent lease-up absorption rates, and competitive supply in the market.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <span style="color:var(--green);flex-shrink:0;margin-top:2px">✓</span>
+          <div>
+            <div style="font-weight:600;color:var(--text)">Comparable property list</div>
+            <div style="color:var(--dim)">Returns specific properties found (name, city, year built, rents) so you can verify the data independently.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- PART 3: USING IN TOOL -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num" style="background:rgba(165,139,250,.12);border:2px solid rgba(165,139,250,.4);color:#a78bfa">3</div>
+      <div>
+        <div class="section-title">Running an Analysis</div>
+        <div class="section-subtitle">Step-by-step workflow once your credentials are set</div>
+      </div>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num" style="background:#a78bfa;color:#000">1</div>
+        <div class="step-content">
+          <div class="step-title">Open the tool and paste your credentials</div>
+          <div class="step-body">
+            <p>Go to your GitHub Pages URL (e.g. <code style="background:var(--panel);padding:1px 6px;border-radius:4px;font-family:monospace;font-size:11px">https://hsnellings.github.io/lihtc-tools/lihtc_feasibility.html</code>).</p>
+            <p>Paste your <strong>HUD token</strong> into the first credential field and optionally your <strong>Anthropic key</strong> into the second. Both fields are password-masked — no one looking over your shoulder can read them.</p>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num" style="background:#a78bfa;color:#000">2</div>
+        <div class="step-content">
+          <div class="step-title">Enter the project address and click Analyze</div>
+          <div class="step-body">
+            <p>Type or paste the full project address in the address field, including city and state. Be as specific as possible — a full street address gets the most accurate county-level HUD data.</p>
+            <p>Click <strong>⚡ Analyze Location</strong> or press <strong>Enter</strong>. A loading overlay will appear showing each data step as it completes (typically 15–45 seconds depending on connection speed).</p>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num" style="background:#a78bfa;color:#000">3</div>
+        <div class="step-content">
+          <div class="step-title">Review and adjust pre-populated fields</div>
+          <div class="step-body">
+            <p>Fields populated from live data are highlighted in blue. Review each tab:</p>
+            <p>
+              • <strong>Units tab</strong> — review the suggested unit mix and comp rents. The HUD rent reference table shows max rents vs. achievable comps side by side. Adjust any rents to match your specific market knowledge.<br>
+              • <strong>Costs tab</strong> — verify the construction cost per SF against your contractor quotes.<br>
+              • <strong>Financing tab</strong> — adjust soft sources to reflect what is actually available for your specific project.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num" style="background:#a78bfa;color:#000">4</div>
+        <div class="step-content">
+          <div class="step-title">Read the live results panel</div>
+          <div class="step-body">
+            <p>The right panel updates in real time as you adjust inputs. The four traffic-light cards at the top show DSCR, LTV, gap/surplus, and annual tax credit. Green means on target, amber means marginal, red means off.</p>
+            <p>The sensitivity tables at the bottom show how the gap changes if rents move ±10% or construction costs move ±$20/SF — useful for stress-testing the deal.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- FAQ -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num" style="background:rgba(245,158,11,.12);border:2px solid rgba(245,158,11,.35);color:var(--amber)">?</div>
+      <div>
+        <div class="section-title">Frequently Asked Questions</div>
+      </div>
+    </div>
+    <div class="faq">
+      <div class="faq-item">
+        <div class="faq-q">Are my API keys stored anywhere?</div>
+        <div class="faq-a">No. Both keys exist only in your browser's memory for the current session. They are never sent to any server other than HUD's API (for the HUD token) and Anthropic's API (for the Anthropic key). Closing or refreshing the tab clears them.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">What if the HUD API returns an error for my address?</div>
+        <div class="faq-a">HUD's income limit and FMR data is organized by metro area (MSA) or non-metro county. If a specific address doesn't return data directly, the tool automatically falls back to state-level HUD data. You can also try entering just the city and state (e.g. "Richmond, VA") rather than a full street address.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">How accurate are the LIHTC comp rents returned by Anthropic?</div>
+        <div class="faq-a">The tool always caps achievable comp rents at the HUD maximum for that unit type and AMI level. For the comps themselves, accuracy depends on what is publicly available online for your specific market. Dense markets (e.g. Richmond, Charlotte, Nashville) tend to have more data available than rural areas. The tool returns the specific property names it found so you can verify independently.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Does the tool work if I only have the HUD token and not the Anthropic key?</div>
+        <div class="faq-a">Yes. Without the Anthropic key, achievable comp rents default to the lower of the HUD maximum and 92% of the HUD Fair Market Rent — a conservative but reasonable market assumption. All other fields (income limits, FMRs, construction costs, operating expenses, soft sources) are still populated from HUD data and regional benchmarks. The HUD token alone gives you a fully usable model.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">How often does HUD update its income limits and FMRs?</div>
+        <div class="faq-a">HUD publishes new income limits and FMRs annually, typically in the spring. The tool always queries the live HUD API and returns the most current published data — no manual updates to the tool are needed when HUD releases new figures.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">How do I get a new HUD token if I lose mine?</div>
+        <div class="faq-a">Return to <a href="https://www.huduser.gov/portal/dataset/api/token" target="_blank">huduser.gov/portal/dataset/api/token</a> and log in with the same email address you registered with. You can generate a new token from your account dashboard.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICK REFERENCE -->
+  <div style="background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:24px 28px">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;letter-spacing:.05em;margin-bottom:16px">Quick Reference</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:12px">
+      <div>
+        <div style="font-weight:700;color:var(--blue);margin-bottom:8px">HUD USER API Token</div>
+        <div style="color:var(--dim);line-height:1.8">
+          Registration: <a href="https://www.huduser.gov/portal/dataset/api/token" target="_blank">huduser.gov/portal/dataset/api/token</a><br>
+          Cost: Free<br>
+          Format: Long alphanumeric string (64+ chars)<br>
+          Updates needed: Never — one token, permanent
+        </div>
+      </div>
+      <div>
+        <div style="font-weight:700;color:var(--green);margin-bottom:8px">Anthropic API Key</div>
+        <div style="color:var(--dim);line-height:1.8">
+          Registration: <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a><br>
+          Cost: Free account · ~$0.03–0.10 per analysis<br>
+          Format: sk-ant-api03-…<br>
+          Spending limit: Set in Settings → Limits
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  LIHTC Feasibility Tool — Setup Guide &nbsp;·&nbsp;
+  Data sources: HUD USER API · Anthropic Claude · RSMeans · US Census Bureau
+</footer>
+
+</body>
+</html>

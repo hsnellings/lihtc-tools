@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LIHTC Feasibility Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07111f;--surf:#0c1a2e;--panel:#0f2040;--deep:#081529;
+  --border:#1a3356;--muted:#0d1e35;--muted2:#122033;
+  --green:#10b981;--blue:#38bdf8;--amber:#f59e0b;--red:#f43f5e;--purple:#a78bfa;
+  --text:#dde8f5;--dim:#5e7a9c;--dimmer:#2d4a6a;
+  --font:'Barlow',sans-serif;--mono:'Fira Code',monospace;--cond:'Barlow Condensed',sans-serif;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);height:100vh;font-size:13px;display:flex;flex-direction:column;overflow:hidden}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--surf)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* ── HEADER ─────────────────────────────────────────────────────────── */
+header{
+  background:var(--surf);border-bottom:1px solid var(--border);
+  padding:11px 20px;display:flex;align-items:center;gap:14px;
+  z-index:300;flex-wrap:wrap;flex-shrink:0;
+}
+.logo{font-family:var(--cond);font-size:20px;font-weight:700;letter-spacing:.07em;white-space:nowrap}
+.logo span{color:var(--green)}
+#projectName{
+  background:var(--panel);border:1px solid var(--border);border-radius:6px;
+  padding:5px 10px;color:var(--text);font-family:var(--font);font-size:12px;
+  width:200px;outline:none;
+}
+#projectName:focus{border-color:var(--blue)}
+.deal-toggle{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.deal-btn{
+  padding:5px 14px;font-size:12px;font-weight:600;font-family:var(--font);
+  cursor:pointer;border:none;background:transparent;color:var(--dim);transition:all .15s;
+}
+.deal-btn.on{background:var(--green);color:#000}
+.qct-toggle{
+  display:flex;align-items:center;gap:7px;background:var(--panel);
+  border:1px solid var(--border);border-radius:8px;padding:5px 11px;
+  cursor:pointer;user-select:none;font-size:12px;white-space:nowrap;
+}
+.qct-dot{width:8px;height:8px;border-radius:50%;background:var(--dimmer);transition:background .2s}
+.qct-toggle.on .qct-dot{background:var(--amber)}
+.qct-toggle.on{border-color:var(--amber)}
+.hdr-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.print-btn{
+  padding:5px 13px;border-radius:6px;font-size:12px;font-weight:600;
+  font-family:var(--font);cursor:pointer;border:1px solid var(--border);
+  background:transparent;color:var(--dim);
+}
+
+/* ── ADDRESS ANALYSIS BAR ────────────────────────────────────────────── */
+#addr-bar{
+  background:var(--deep);border-bottom:1px solid var(--border);
+  padding:14px 20px;display:flex;flex-direction:column;gap:8px;
+  flex-shrink:0;
+}
+.addr-row{display:flex;gap:10px;align-items:stretch}
+#addrInput{
+  flex:1;background:var(--surf);border:1px solid var(--border);border-radius:8px;
+  padding:9px 14px;color:var(--text);font-family:var(--font);font-size:13px;
+  outline:none;transition:border-color .15s;
+}
+#addrInput:focus{border-color:var(--blue)}
+#addrInput::placeholder{color:var(--dim)}
+#analyzeBtn{
+  padding:9px 20px;background:var(--blue);border:none;border-radius:8px;
+  color:#000;font-weight:700;font-size:13px;font-family:var(--font);
+  cursor:pointer;white-space:nowrap;transition:opacity .15s;
+}
+#analyzeBtn:hover{opacity:.85}
+#analyzeBtn:disabled{opacity:.45;cursor:not-allowed}
+#clearBtn{
+  padding:9px 14px;background:transparent;border:1px solid var(--border);border-radius:8px;
+  color:var(--dim);font-size:12px;font-family:var(--font);cursor:pointer;white-space:nowrap;
+}
+
+/* Analysis status */
+#analysisStatus{display:none;align-items:center;gap:10px;font-size:12px;color:var(--dim)}
+.status-spinner{
+  width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--blue);
+  border-radius:50%;flex-shrink:0;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinning{animation:spin .8s linear infinite}
+
+/* Analysis result bar */
+#analysisResult{display:none}
+.result-bar{
+  display:flex;gap:0;background:var(--surf);border:1px solid var(--border);
+  border-radius:10px;overflow:hidden;
+}
+.rb-section{
+  padding:10px 16px;border-right:1px solid var(--border);flex:1;min-width:0;
+}
+.rb-section:last-child{border-right:none}
+.rb-label{font-size:9px;font-weight:700;color:var(--dim);letter-spacing:.1em;margin-bottom:3px}
+.rb-val{font-family:var(--mono);font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rb-sub{font-size:10px;color:var(--dimmer);margin-top:2px}
+.src-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.src-tag{
+  background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.3);
+  border-radius:4px;padding:2px 8px;font-size:10px;color:var(--blue);
+}
+.populated-note{
+  font-size:11px;color:var(--green);display:flex;align-items:center;gap:6px;
+}
+
+/* ── LAYOUT ──────────────────────────────────────────────────────────── */
+.layout{display:grid;grid-template-columns:490px 1fr;flex:1;min-height:0;overflow:hidden}
+.inputs-panel{
+  background:var(--surf);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.tab-nav{display:flex;background:var(--deep);border-bottom:1px solid var(--border);flex-shrink:0}
+.tab-btn{
+  flex:1;padding:9px 4px;font-size:11px;font-weight:600;letter-spacing:.05em;
+  cursor:pointer;border:none;background:transparent;color:var(--dim);
+  border-bottom:2px solid transparent;transition:all .15s;font-family:var(--font);
+}
+.tab-btn.on{color:var(--green);border-bottom-color:var(--green);background:rgba(16,185,129,.06)}
+.tab-panels{flex:1;overflow-y:auto;padding:18px}
+.tab-panel{display:none}.tab-panel.on{display:block}
+
+/* ── INPUT ELEMENTS ──────────────────────────────────────────────────── */
+.sec{font-family:var(--cond);font-size:11px;font-weight:700;color:var(--dim);
+  letter-spacing:.12em;margin:18px 0 12px;padding-bottom:5px;border-bottom:1px solid var(--muted)}
+.sec:first-child{margin-top:0}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.frow.trio{grid-template-columns:1fr 1fr 1fr}
+.frow.solo{grid-template-columns:1fr}
+.f{display:flex;flex-direction:column;gap:3px}
+.f label{font-size:10px;font-weight:600;color:var(--dim);letter-spacing:.05em;text-transform:uppercase}
+.f input,.f select{
+  background:var(--panel);border:1px solid var(--border);border-radius:6px;
+  padding:6px 9px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;
+  width:100%;transition:border-color .15s,background .15s;
+}
+.f input:focus,.f select:focus{border-color:var(--blue)}
+.f input.ap{border-color:rgba(56,189,248,.6)!important;background:rgba(56,189,248,.04)!important}
+.f input.ap:focus{border-color:var(--blue)!important}
+.f .hint{font-size:10px;color:var(--dimmer);margin-top:1px}
+.f select option{background:var(--panel)}
+
+/* ── UNIT TABLE ──────────────────────────────────────────────────────── */
+.utw{overflow-x:auto;margin-bottom:10px}
+table.ut{width:100%;border-collapse:collapse;font-size:12px}
+.ut th{padding:6px 7px;text-align:left;font-size:9px;font-weight:700;color:var(--dim);
+  letter-spacing:.07em;border-bottom:1px solid var(--border);background:var(--deep);white-space:nowrap}
+.ut td{padding:4px 3px;border-bottom:1px solid var(--muted);vertical-align:middle}
+.ut td input,.ut td select{
+  background:var(--panel);border:1px solid var(--border);border-radius:5px;
+  padding:4px 6px;color:var(--text);font-family:var(--mono);font-size:11px;width:100%;outline:none;
+}
+.ut td input.ap,.ut td select.ap{border-color:rgba(56,189,248,.6);background:rgba(56,189,248,.04)}
+.ut td input:focus,.ut td select:focus{border-color:var(--blue)}
+.ut .del-btn{background:none;border:none;color:var(--dimmer);cursor:pointer;font-size:16px;padding:1px 4px;border-radius:3px}
+.ut .del-btn:hover{color:var(--red);background:rgba(244,63,94,.1)}
+.ut .td-num{font-family:var(--mono);font-size:11px;color:var(--dim);padding:4px 7px;white-space:nowrap}
+.add-btn{
+  background:transparent;border:1px dashed var(--border);border-radius:6px;
+  padding:6px;color:var(--dim);font-size:12px;cursor:pointer;width:100%;
+  font-family:var(--font);transition:all .15s;
+}
+.add-btn:hover{border-color:var(--green);color:var(--green)}
+.unit-tots{
+  display:flex;gap:14px;padding:9px 12px;background:var(--muted);
+  border-radius:6px;margin-top:8px;font-size:11px;flex-wrap:wrap;
+}
+.ut-box{display:flex;flex-direction:column;gap:1px}
+.ut-val{font-family:var(--mono);font-size:14px;font-weight:500}
+.ut-lbl{font-size:9px;color:var(--dim);letter-spacing:.06em}
+
+/* ── RESULTS PANEL ───────────────────────────────────────────────────── */
+.results-panel{overflow-y:auto;padding:18px;background:var(--bg);display:flex;flex-direction:column;gap:14px}
+
+/* Market summary card (shown after analysis) */
+#marketCard{display:none;background:var(--surf);border:1px solid var(--blue);border-radius:10px;overflow:hidden}
+.mc-header{background:rgba(56,189,248,.1);padding:10px 16px;border-bottom:1px solid rgba(56,189,248,.2);
+  display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--blue)}
+.mc-body{padding:12px 16px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.mc-stat{display:flex;flex-direction:column;gap:2px}
+.mc-val{font-family:var(--mono);font-size:16px;font-weight:500;color:var(--text)}
+.mc-lbl{font-size:9px;color:var(--dim);letter-spacing:.07em}
+.mc-note{grid-column:1/-1;font-size:11px;color:var(--dim);line-height:1.6;padding-top:8px;border-top:1px solid var(--muted)}
+
+/* Traffic lights */
+.verdict-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.vc{background:var(--surf);border:1px solid var(--border);border-radius:10px;padding:13px 14px;display:flex;flex-direction:column;gap:3px}
+.vc-dot{width:7px;height:7px;border-radius:50%;margin-bottom:3px}
+.vc-lbl{font-size:9px;font-weight:700;color:var(--dim);letter-spacing:.09em}
+.vc-val{font-family:var(--mono);font-size:21px;font-weight:500;line-height:1}
+.vc-sub{font-size:10px;color:var(--dim)}
+.c-g{color:var(--green)}.c-a{color:var(--amber)}.c-r{color:var(--red)}.c-b{color:var(--blue)}
+.bg-g{background:var(--green)}.bg-a{background:var(--amber)}.bg-r{background:var(--red)}.bg-d{background:var(--dimmer)}
+
+/* Result sections */
+.rs{background:var(--surf);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.rs-hdr{display:flex;align-items:center;justify-content:space-between;
+  padding:9px 14px;background:var(--panel);border-bottom:1px solid var(--border)}
+.rs-title{font-family:var(--cond);font-size:12px;font-weight:700;color:var(--dim);letter-spacing:.09em}
+.rs-tot{font-family:var(--mono);font-size:13px;font-weight:500}
+.li{display:flex;justify-content:space-between;align-items:center;
+  padding:6px 14px;border-bottom:1px solid var(--muted);font-size:12px}
+.li:last-child{border-bottom:none}
+.li.sub{background:rgba(16,185,129,.03);font-weight:600}
+.li.tot{background:var(--panel);font-weight:600;font-size:13px}
+.li.gap{font-weight:700;font-size:13px}
+.li-l{color:var(--dim)}.li-l.in{padding-left:12px;color:var(--dimmer)}
+.li-v{font-family:var(--mono);text-align:right;white-space:nowrap}
+.li-v.pos{color:var(--green)}.li-v.neg{color:var(--red)}.li-v.amb{color:var(--amber)}
+.li-div{height:1px;background:var(--border);margin:1px 0}
+
+/* Metrics grid */
+.mg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px}
+.mb{background:var(--panel);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.mb-v{font-family:var(--mono);font-size:17px;font-weight:500;line-height:1}
+.mb-l{font-size:9px;color:var(--dim);letter-spacing:.06em}
+.mb-s{font-size:10px;color:var(--dimmer);margin-top:1px}
+
+/* Sensitivity */
+.sens-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)}
+.sens-pane{background:var(--surf);padding:12px}
+.sens-lbl{font-size:9px;font-weight:700;color:var(--dim);letter-spacing:.08em;margin-bottom:8px}
+table.st{width:100%;border-collapse:collapse;font-size:11px}
+.st th{padding:5px 8px;font-size:9px;font-weight:700;color:var(--dim);letter-spacing:.07em;
+  border-bottom:1px solid var(--border);background:var(--panel);text-align:right}
+.st th:first-child{text-align:left}
+.st td{padding:5px 8px;border-bottom:1px solid var(--muted);text-align:right;font-family:var(--mono)}
+.st td:first-child{text-align:left;color:var(--dim)}
+.st .base{font-weight:600;background:rgba(56,189,248,.06)}
+.st .g{color:var(--green)}.st .r{color:var(--red)}
+
+/* HUD rent reference table */
+.rent-ref{margin-top:12px;background:var(--muted2);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.rr-hdr{padding:7px 12px;font-size:10px;font-weight:700;color:var(--dim);letter-spacing:.08em;background:var(--panel)}
+table.rrt{width:100%;border-collapse:collapse;font-size:11px}
+.rrt th{padding:5px 10px;background:var(--deep);text-align:left;font-size:9px;color:var(--dim);letter-spacing:.06em;border-bottom:1px solid var(--border)}
+.rrt td{padding:5px 10px;border-bottom:1px solid var(--muted);font-family:var(--mono);color:var(--dim)}
+.rrt td.comp{color:var(--green);font-weight:500}
+.rrt td.fmr{color:var(--amber)}
+.rrt .warning{color:var(--red)}
+
+/* Loading overlay */
+#loadingOverlay{
+  display:none;position:fixed;inset:0;background:rgba(7,17,31,.85);
+  z-index:500;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+}
+#loadingOverlay.show{display:flex}
+.loading-card{
+  background:var(--surf);border:1px solid var(--border);border-radius:14px;
+  padding:32px 40px;text-align:center;max-width:420px;
+}
+.loading-spinner{
+  width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--blue);
+  border-radius:50%;margin:0 auto 18px;animation:spin .8s linear infinite;
+}
+.loading-title{font-family:var(--cond);font-size:18px;font-weight:700;margin-bottom:8px}
+.loading-steps{list-style:none;text-align:left;display:flex;flex-direction:column;gap:6px;margin-top:14px}
+.loading-steps li{font-size:12px;color:var(--dim);padding-left:18px;position:relative}
+.loading-steps li::before{content:'○';position:absolute;left:0;color:var(--border)}
+.loading-steps li.done::before{content:'✓';color:var(--green)}
+.loading-steps li.active::before{content:'◌';color:var(--blue);animation:spin .8s linear infinite;display:inline-block}
+
+@media print{header .print-btn{display:none}.layout{grid-template-columns:1fr!important}.inputs-panel{display:none}.results-panel{padding:0}}
+@media(max-width:900px){.layout{grid-template-columns:1fr;height:auto}.inputs-panel{max-height:55vh}.verdict-row{grid-template-columns:1fr 1fr}.mg{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ─────────────────────────────────────────────────────────── -->
+<header>
+  <div class="logo">LIHTC <span>FEASIBILITY</span></div>
+  <input id="projectName" type="text" value="My LIHTC Project" placeholder="Project name…">
+  <div class="deal-toggle">
+    <button class="deal-btn on" id="btn9" onclick="setDeal('9pct')">9% Competitive</button>
+    <button class="deal-btn" id="btn4" onclick="setDeal('4pct')">4% Bond</button>
+  </div>
+  <div class="qct-toggle" id="qctT" onclick="toggleQCT()">
+    <div class="qct-dot" id="qctDot"></div>
+    <span id="qctLbl">QCT/DDA: No</span>
+  </div>
+  <div class="hdr-right">
+    <a href="index.html" style="padding:5px 13px;border-radius:6px;font-size:12px;font-weight:600;font-family:'Barlow',sans-serif;border:1px solid var(--border);color:var(--dim);text-decoration:none;transition:opacity .15s" onmouseover="this.style.opacity=.75" onmouseout="this.style.opacity=1">← Home</a>
+    <button class="print-btn" onclick="window.print()">⎙ Print</button>
+  </div>
+</header>
+
+<!-- ── ADDRESS BAR ────────────────────────────────────────────────────── -->
+<div id="addr-bar">
+  <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:#5e7a9c;letter-spacing:.12em;margin-bottom:6px">AUTO-POPULATE — LIVE HUD 2026 DATA + LIHTC COMP RESEARCH</div>
+  <div class="addr-row">
+    <input id="addrInput" type="text" placeholder="📍 Enter project address — pulls live HUD 2026 income limits, FMRs &amp; local LIHTC comp rents…">
+    <button id="analyzeBtn" onclick="runAnalysis()">&#9889; Analyze Location</button>
+    <button id="clearBtn" onclick="clearAnalysis()">Clear</button>
+  </div>
+  <div class="addr-row" style="gap:10px;align-items:center">
+    <div style="font-size:11px;color:var(--blue);font-weight:600;white-space:nowrap;flex-shrink:0">HUD Token <span style="color:var(--red)">*</span></div>
+    <input id="hudToken" type="password" placeholder="Free at huduser.gov/portal/dataset/api/token — required for live 2026 income limits &amp; FMRs"
+      style="flex:1;background:var(--panel);border:1px solid var(--border);border-radius:7px;padding:6px 10px;color:var(--text);font-family:monospace;font-size:11px;outline:none"
+      oninput="updateTokenStatus()">
+    <div style="font-size:11px;color:var(--dim);font-weight:600;white-space:nowrap;flex-shrink:0">Anthropic Key</div>
+    <input id="anthropicKey" type="password" placeholder="console.anthropic.com — enables live LIHTC comp rent research (optional)"
+      style="flex:1;background:var(--panel);border:1px solid var(--border);border-radius:7px;padding:6px 10px;color:var(--text);font-family:monospace;font-size:11px;outline:none"
+      oninput="updateTokenStatus()">
+    <div id="tokenStatus" style="font-size:11px;white-space:nowrap;flex-shrink:0;color:var(--dimmer)">—</div>
+    <a href="setup_guide.html" target="_blank"
+      style="font-size:11px;white-space:nowrap;flex-shrink:0;color:var(--purple);font-weight:600;text-decoration:none;padding:5px 10px;border:1px solid rgba(167,139,250,.35);border-radius:6px;background:rgba(167,139,250,.08)"
+      onmouseover="this.style.opacity=.75" onmouseout="this.style.opacity=1">
+      🔑 Setup Guide →
+    </a>
+  </div>
+  <div id="analysisStatus">
+    <div class="status-spinner spinning"></div>
+    <span id="statusText">Geocoding address…</span>
+  </div>
+  <div id="analysisResult">
+    <div class="result-bar" id="resultBar"></div>
+    <div class="src-tags" id="srcTags"></div>
+  </div>
+</div>
+
+<!-- ── LOADING OVERLAY ────────────────────────────────────────────────── -->
+<div id="loadingOverlay">
+  <div class="loading-card">
+    <div class="loading-spinner"></div>
+    <div class="loading-title">Researching Local Market</div>
+    <div style="font-size:12px;color:var(--dim)">Pulling live data for your project area…</div>
+    <ul class="loading-steps" id="loadingSteps">
+      <li id="ls1">Geocoding address &amp; identifying metro area</li>
+      <li id="ls2">Fetching HUD 2026 income limits (live)</li>
+      <li id="ls3">Fetching HUD 2026 fair market rents (live)</li>
+      <li id="ls4">Calculating max LIHTC rent limits</li>
+      <li id="ls5">Researching local LIHTC comp rents</li>
+      <li id="ls6">Applying construction &amp; operating benchmarks</li>
+      <li id="ls7">Populating feasibility model</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ── MAIN LAYOUT ────────────────────────────────────────────────────── -->
+<div class="layout">
+
+  <!-- LEFT: INPUTS ────────────────────────────────────────────────────── -->
+  <div class="inputs-panel">
+    <nav class="tab-nav">
+      <button class="tab-btn on" onclick="switchTab('setup')">SETUP</button>
+      <button class="tab-btn" onclick="switchTab('units')">UNITS</button>
+      <button class="tab-btn" onclick="switchTab('expenses')">EXPENSES</button>
+      <button class="tab-btn" onclick="switchTab('costs')">COSTS</button>
+      <button class="tab-btn" onclick="switchTab('financing')">FINANCING</button>
+    </nav>
+
+    <div class="tab-panels">
+
+      <!-- SETUP ─────────────────────────────────────────────────────── -->
+      <div id="tab-setup" class="tab-panel on">
+        <div class="sec">PROJECT OVERVIEW</div>
+        <div class="frow">
+          <div class="f"><label>Gross Building Area (SF)</label>
+            <input type="number" id="gba" value="52000" oninput="recalc()"></div>
+          <div class="f"><label>Number of Buildings</label>
+            <input type="number" id="numBldg" value="1" min="1" oninput="recalc()"></div>
+        </div>
+        <div class="frow">
+          <div class="f"><label>Market-Rate Units (#)</label>
+            <input type="number" id="mrUnits" value="0" min="0" oninput="recalc()">
+            <span class="hint">Excluded from eligible basis</span></div>
+          <div class="f"><label>Construction Type</label>
+            <select id="constType" onchange="recalc()">
+              <option>Wood Frame</option><option>Steel / Concrete</option>
+              <option>Modular</option><option>Rehab / Adaptive Reuse</option>
+            </select></div>
+        </div>
+
+        <div class="sec">CREDIT ASSUMPTIONS</div>
+        <div class="frow" id="afr-row" style="display:none">
+          <div class="f"><label>4% Credit Rate (AFR) %</label>
+            <input type="number" id="creditRate4" value="3.64" step="0.01" oninput="recalc()">
+            <span class="hint">Check IRS monthly — currently ~3.64%</span></div>
+          <div class="f"><label>Bond Amount ($)</label>
+            <input type="number" id="bondAmt" value="0" oninput="recalc()">
+            <span class="hint">Must be ≥ 50% of aggregate basis</span></div>
+        </div>
+        <div class="frow">
+          <div class="f"><label>Equity Price ($ / credit $)</label>
+            <input type="number" id="equityPrice" value="0.87" step="0.01" oninput="recalc()">
+            <span class="hint">Current market: $0.82–$0.95</span></div>
+          <div class="f"><label>Basis Boost</label>
+            <input type="text" id="boostDisplay" readonly style="color:var(--amber);cursor:default"></div>
+        </div>
+      </div>
+
+      <!-- UNITS ─────────────────────────────────────────────────────── -->
+      <div id="tab-units" class="tab-panel">
+        <div class="sec">UNIT MIX &amp; ACHIEVABLE COMP RENTS</div>
+        <div class="utw">
+          <table class="ut">
+            <thead><tr>
+              <th>TYPE</th><th>UNITS</th><th>AMI%</th>
+              <th>COMP RENT/MO</th><th>HUD MAX/MO</th><th>ANN. GPR</th><th></th>
+            </tr></thead>
+            <tbody id="utBody"></tbody>
+          </table>
+        </div>
+        <button class="add-btn" onclick="addUnit()">+ Add Unit Type</button>
+        <div class="unit-tots" id="utTots">
+          <div class="ut-box"><div class="ut-val" id="ut-tot">0</div><div class="ut-lbl">TOTAL UNITS</div></div>
+          <div class="ut-box"><div class="ut-val" id="ut-lihtc">0</div><div class="ut-lbl">LIHTC UNITS</div></div>
+          <div class="ut-box"><div class="ut-val c-g" id="ut-gpr">$0</div><div class="ut-lbl">GROSS RENT</div></div>
+          <div class="ut-box"><div class="ut-val" id="ut-avg">$0/mo</div><div class="ut-lbl">AVG RENT/UNIT</div></div>
+        </div>
+
+        <!-- HUD rent reference — shown after location analysis -->
+        <div id="rentRef" style="display:none" class="rent-ref">
+          <div class="rr-hdr">HUD INCOME LIMITS &amp; RENT REFERENCE — <span id="rr-area"></span></div>
+          <table class="rrt"><thead><tr>
+            <th>Unit Type</th><th>HUD Max 50%</th><th>HUD Max 60%</th><th>FMR</th><th>Comp Rent (60%)</th>
+          </tr></thead>
+          <tbody id="rrtBody"></tbody></table>
+        </div>
+
+        <div class="sec" style="margin-top:16px">OTHER INCOME &amp; VACANCY</div>
+        <div class="frow">
+          <div class="f"><label>Other Income ($/unit/yr)</label>
+            <input type="number" id="otherInc" value="300" oninput="recalc()">
+            <span class="hint">Parking, laundry, late fees</span></div>
+          <div class="f"><label>Vacancy Rate %</label>
+            <input type="number" id="vacRate" value="7" step="0.5" oninput="recalc()"></div>
+        </div>
+      </div>
+
+      <!-- EXPENSES ───────────────────────────────────────────────────── -->
+      <div id="tab-expenses" class="tab-panel">
+        <div class="sec">OPERATING EXPENSES ($/UNIT/YEAR UNLESS NOTED)</div>
+        <div class="frow">
+          <div class="f"><label>Management (% of EGI)</label>
+            <input type="number" id="eMgmt" value="8" step="0.5" oninput="recalc()"></div>
+          <div class="f"><label>Maintenance &amp; Repairs</label>
+            <input type="number" id="eMaint" value="800" oninput="recalc()"></div>
+        </div>
+        <div class="frow">
+          <div class="f"><label>Utilities (common areas)</label>
+            <input type="number" id="eUtil" value="600" oninput="recalc()"></div>
+          <div class="f"><label>Insurance</label>
+            <input type="number" id="eIns" value="450" oninput="recalc()"></div>
+        </div>
+        <div class="frow">
+          <div class="f"><label>Administration</label>
+            <input type="number" id="eAdmin" value="350" oninput="recalc()"></div>
+          <div class="f"><label>Property Tax / PILOT</label>
+            <input type="number" id="eTax" value="0" oninput="recalc()">
+            <span class="hint">Usually $0 with LIHTC PILOT</span></div>
+        </div>
+        <div class="frow">
+          <div class="f"><label>Social Services</label>
+            <input type="number" id="eServices" value="200" oninput="recalc()"></div>
+          <div class="f"><label>Other Operating</label>
+            <input type="number" id="eOther" value="150" oninput="recalc()"></div>
+        </div>
+        <div class="frow">
+          <div class="f"><label>Replacement Reserve</label>
+            <input type="number" id="eReserve" value="400" oninput="recalc()">
+            <span class="hint">Lenders typically require $350–500</span></div>
+          <div class="f"><label>Operating Reserve (total $)</label>
+            <input type="number" id="eOpRes" value="0" oninput="recalc()">
+            <span class="hint">One-time; included in TDC</span></div>
+        </div>
+      </div>
+
+      <!-- COSTS ──────────────────────────────────────────────────────── -->
+      <div id="tab-costs" class="tab-panel">
+        <div class="sec">LAND &amp; ACQUISITION</div>
+        <div class="frow">
+          <div class="f"><label>Land / Acquisition ($)</label>
+            <input type="number" id="land" value="500000" oninput="recalc()">
+            <span class="hint">Not in eligible basis</span></div>
+          <div class="f"><label>Relocation ($)</label>
+            <input type="number" id="reloc" value="0" oninput="recalc()"></div>
+        </div>
+
+        <div class="sec">HARD COSTS</div>
+        <div class="frow">
+          <div class="f"><label>Construction ($/SF)</label>
+            <input type="number" id="costSF" value="185" oninput="recalc()"></div>
+          <div class="f"><label>Site Work ($)</label>
+            <input type="number" id="siteWork" value="150000" oninput="recalc()"></div>
+        </div>
+        <div class="frow">
+          <div class="f"><label>FF&amp;E / Equipment ($)</label>
+            <input type="number" id="ffe" value="0" oninput="recalc()"></div>
+          <div class="f"><label>Hard Cost Contingency %</label>
+            <input type="number" id="hardCont" value="5" step="0.5" oninput="recalc()"></div>
+        </div>
+
+        <div class="sec">SOFT COSTS</div>
+        <div class="frow">
+          <div class="f"><label>Arch &amp; Engineering ($)</label>
+            <input type="number" id="arch" value="0" placeholder="Auto: % below" oninput="recalc()"></div>
+          <div class="f"><label>A&amp;E as % of Hard Costs</label>
+            <input type="number" id="archPct" value="6" step="0.5" oninput="recalc()"></div>
+        </div>
+        <div class="frow">
+          <div class="f"><label>Environmental / Geotech ($)</label>
+            <input type="number" id="enviro" value="30000" oninput="recalc()"></div>
+          <div class="f"><label>Survey &amp; Title ($)</label>
+            <input type="number" id="title" value="20000" oninput="recalc()"></div>
+        </div>
+        <div class="frow">
+          <div class="f"><label>Legal — Developer ($)</label>
+            <input type="number" id="legalDev" value="40000" oninput="recalc()"></div>
+          <div class="f"><label>Legal — Lender ($)</label>
+            <input type="number" id="legalLend" value="25000" oninput="recalc()"></div>
+        </div>
+        <div class="frow">
+          <div class="f"><label>Market Study ($)</label>
+            <input type="number" id="mktStudy" value="8000" oninput="recalc()"></div>
+          <div class="f"><label>Appraisal ($)</label>
+            <input type="number" id="appraisal" value="8000" oninput="recalc()"></div>
+        </div>
+        <div class="frow">
+          <div class="f"><label>Accounting / Audit Setup ($)</label>
+            <input type="number" id="acctg" value="12000" oninput="recalc()"></div>
+          <div class="f"><label>LIHTC App / Credit Fee ($)</label>
+            <input type="number" id="lihtcFee" value="15000" oninput="recalc()"></div>
+        </div>
+        <div class="frow">
+          <div class="f"><label>Lender Inspection ($)</label>
+            <input type="number" id="lendInsp" value="15000" oninput="recalc()"></div>
+          <div class="f"><label>Misc. Soft (% of Hard)</label>
+            <input type="number" id="miscSoft" value="1.5" step="0.5" oninput="recalc()"></div>
+        </div>
+
+        <div class="sec">DEVELOPER FEE</div>
+        <div class="frow">
+          <div class="f"><label>Developer Fee (% of elig. basis)</label>
+            <input type="number" id="devFeePct" value="15" step="0.5" max="25" oninput="recalc()">
+            <span class="hint">Most QAPs cap at 15–20%</span></div>
+          <div class="f"><label>Deferred Dev Fee (% of total fee)</label>
+            <input type="number" id="deferPct" value="50" step="5" max="100" oninput="recalc()">
+            <span class="hint">Deferred portion = soft source in S&amp;U</span></div>
+        </div>
+      </div>
+
+      <!-- FINANCING ──────────────────────────────────────────────────── -->
+      <div id="tab-financing" class="tab-panel">
+        <div class="sec">PERMANENT DEBT</div>
+        <div class="frow">
+          <div class="f"><label>Interest Rate %</label>
+            <input type="number" id="intRate" value="6.5" step="0.25" oninput="recalc()"></div>
+          <div class="f"><label>Amortization (years)</label>
+            <input type="number" id="amortYrs" value="35" oninput="recalc()"></div>
+        </div>
+        <div class="frow">
+          <div class="f"><label>DSCR Requirement</label>
+            <input type="number" id="dscrTgt" value="1.20" step="0.05" oninput="recalc()"></div>
+          <div class="f"><label>Max LTV %</label>
+            <input type="number" id="ltvMax" value="85" oninput="recalc()"></div>
+        </div>
+
+        <div class="sec">CONSTRUCTION / BRIDGE</div>
+        <div class="frow">
+          <div class="f"><label>Construction Loan Rate %</label>
+            <input type="number" id="constRate" value="7.5" step="0.25" oninput="recalc()"></div>
+          <div class="f"><label>Construction Period (months)</label>
+            <input type="number" id="constMos" value="18" oninput="recalc()"></div>
+        </div>
+        <div class="frow">
+          <div class="f"><label>Origination Fee %</label>
+            <input type="number" id="origPct" value="1.0" step="0.25" oninput="recalc()"></div>
+          <div class="f"><label>Other Financing Costs ($)</label>
+            <input type="number" id="otherFinCosts" value="25000" oninput="recalc()"></div>
+        </div>
+
+        <div class="sec">SOFT SOURCES (AVAILABLE FUNDS)</div>
+        <div class="frow">
+          <div class="f"><label>HOME Funds ($)</label>
+            <input type="number" id="home" value="0" oninput="recalc()"></div>
+          <div class="f"><label>CDBG ($)</label>
+            <input type="number" id="cdbg" value="0" oninput="recalc()"></div>
+        </div>
+        <div class="frow">
+          <div class="f"><label>AHP / FHLB ($)</label>
+            <input type="number" id="ahp" value="0" oninput="recalc()"></div>
+          <div class="f"><label>State Gap Financing ($)</label>
+            <input type="number" id="stateGap" value="0" oninput="recalc()"></div>
+        </div>
+        <div class="frow">
+          <div class="f"><label>Local / City Funds ($)</label>
+            <input type="number" id="localFunds" value="0" oninput="recalc()"></div>
+          <div class="f"><label>Other Grants ($)</label>
+            <input type="number" id="otherGrants" value="0" oninput="recalc()"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RIGHT: LIVE RESULTS ─────────────────────────────────────────────── -->
+  <div class="results-panel" id="resultsPanel">
+    <!-- rendered by renderResults() -->
+  </div>
+</div>
+
+<script>
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let dealType = '9pct', isQCT = false, uidc = 4;
+let units = [
+  {id:1,type:'1BR',count:15,ami:60,rent:875,hudMax:950},
+  {id:2,type:'2BR',count:25,ami:60,rent:1050,hudMax:1140},
+  {id:3,type:'3BR',count:10,ami:60,rent:1200,hudMax:1315},
+];
+let locationData = null;  // populated after analysis
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+const v  = id => parseFloat(document.getElementById(id)?.value) || 0;
+const vi = id => parseInt(document.getElementById(id)?.value) || 0;
+const fmt  = n => isFinite(n) && n!==null ? '$'+Math.round(n).toLocaleString() : '—';
+const fmtM = n => isFinite(n) ? '$'+(n/1e6).toFixed(2)+'M' : '—';
+const fmtN = (n,d=2) => isFinite(n) ? n.toFixed(d) : '—';
+const pct  = n => isFinite(n) ? (n*100).toFixed(1)+'%' : '—';
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+function setF(id,val,autoMark=true){
+  const el=document.getElementById(id);
+  if(!el||val==null) return;
+  el.value=val;
+  if(autoMark) el.classList.add('ap');
+}
+function setTdF(el,val,autoMark=true){
+  if(!el||val==null) return;
+  el.value=val;
+  if(autoMark) el.classList.add('ap');
+}
+function lsStep(idx,state,note=''){
+  const li=document.getElementById('ls'+idx);
+  if(!li) return;
+  li.className=state;
+  const icons={'active':'◌','done':'✓','err':'✕','skip':'—'};
+  const colors={'active':'var(--blue)','done':'var(--green)','err':'var(--amber)','skip':'var(--dimmer)'};
+  const base=li.textContent.replace(/^[◌✓✕— ]+/,'').split(' —')[0];
+  li.innerHTML=`<span style="color:${colors[state]||'var(--dim)'};margin-right:5px">${icons[state]||'○'}</span>${base}${note?' <span style="color:var(--dimmer)">— '+note+'</span>':''}`;
+}
+
+// ── HEADER CONTROLS ───────────────────────────────────────────────────────────
+function setDeal(t){
+  dealType=t;
+  document.getElementById('btn9').className='deal-btn'+(t==='9pct'?' on':'');
+  document.getElementById('btn4').className='deal-btn'+(t==='4pct'?' on':'');
+  document.getElementById('afr-row').style.display=t==='4pct'?'grid':'none';
+  recalc();
+}
+function toggleQCT(){
+  isQCT=!isQCT;
+  document.getElementById('qctT').className='qct-toggle'+(isQCT?' on':'');
+  document.getElementById('qctLbl').textContent='QCT/DDA: '+(isQCT?'Yes — 130%':'No');
+  recalc();
+}
+function switchTab(name){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('tab-'+name).classList.add('on');
+  const idx=['setup','units','expenses','costs','financing'].indexOf(name);
+  document.querySelectorAll('.tab-btn')[idx]?.classList.add('on');
+}
+
+// ── UNIT TABLE ────────────────────────────────────────────────────────────────
+const TYPES=['Studio','1BR','2BR','3BR','4BR'];
+const AMIS=[20,30,40,50,60,70,80,'Market'];
+function addUnit(){units.push({id:uidc++,type:'2BR',count:0,ami:60,rent:0,hudMax:0});renderUnits();recalc();}
+function removeUnit(id){units=units.filter(u=>u.id!==id);renderUnits();recalc();}
+function updateUnit(id,field,val){
+  const u=units.find(u=>u.id===id);
+  if(u) u[field]=field==='type'?val:(parseFloat(val)||0);
+  recalc(); updateUnitTotals();
+}
+function renderUnits(){
+  document.getElementById('utBody').innerHTML=units.map(u=>`
+    <tr>
+      <td><select onchange="updateUnit(${u.id},'type',this.value)" ${u._ap?'class="ap"':''}>
+        ${TYPES.map(t=>`<option ${t===u.type?'selected':''}>${t}</option>`).join('')}
+      </select></td>
+      <td><input type="number" value="${u.count}" min="0" style="width:52px"
+        ${u._ap?'class="ap"':''} onchange="updateUnit(${u.id},'count',this.value)"></td>
+      <td><select onchange="updateUnit(${u.id},'ami',this.value)" ${u._ap?'class="ap"':''}>
+        ${AMIS.map(a=>`<option value="${a}" ${a==u.ami?'selected':''}>${a==='Market'?'Mkt':a+'%'}</option>`).join('')}
+      </select></td>
+      <td><input type="number" value="${u.rent}" min="0" style="width:70px" placeholder="$"
+        ${u._ap?'class="ap"':''} onchange="updateUnit(${u.id},'rent',this.value)"></td>
+      <td><input type="number" value="${u.hudMax}" min="0" style="width:70px" placeholder="$"
+        onchange="updateUnit(${u.id},'hudMax',this.value)"></td>
+      <td class="td-num">${u.count&&u.rent?'$'+(u.count*u.rent*12).toLocaleString():'—'}</td>
+      <td><button class="del-btn" onclick="removeUnit(${u.id})">×</button></td>
+    </tr>`).join('');
+}
+function updateUnitTotals(){
+  const tot=units.reduce((s,u)=>s+(u.count||0),0);
+  const ltc=units.filter(u=>u.ami!=='Market').reduce((s,u)=>s+(u.count||0),0);
+  const gpr=units.reduce((s,u)=>s+(u.count||0)*(u.rent||0)*12,0);
+  const avg=tot>0?gpr/tot/12:0;
+  document.getElementById('ut-tot').textContent=tot;
+  document.getElementById('ut-lihtc').textContent=ltc;
+  document.getElementById('ut-gpr').textContent='$'+Math.round(gpr).toLocaleString();
+  document.getElementById('ut-avg').textContent='$'+Math.round(avg)+'/mo';
+}
+
+// ── GEOCODING ─────────────────────────────────────────────────────────────────
+async function geocodeAddress(addr){
+  const url=`https://geocoding.geo.census.gov/geocoder/geographies/onelineaddress?address=${encodeURIComponent(addr)}&benchmark=Public_AR_Current&vintage=Census2020_Current&format=json`;
+  const r=await fetch(url);
+  const d=await r.json();
+  const m=d.result?.addressMatches?.[0];
+  if(!m) return null;
+  const county=m.geographies?.Counties?.[0];
+  const cbsa=m.geographies?.['Metropolitan Statistical Areas']?.[0]
+           || m.geographies?.['Micropolitan Statistical Areas']?.[0]
+           || m.geographies?.['Combined Statistical Areas']?.[0];
+  return {
+    lat:m.coordinates.y, lon:m.coordinates.x,
+    state:m.addressComponents.state,
+    city:m.addressComponents.city || m.addressComponents.streetName,
+    county:county?.NAME || '',
+    countyFips:county?.GEOID || '',
+    metro:cbsa?.NAME || '',
+    matchedAddr:m.matchedAddress,
+  };
+}
+
+// ── DATA SOURCES ─────────────────────────────────────────────────────────────
+// 1. HUD USER API (huduser.gov — free token) → exact 2026 income limits + FMRs
+// 2. Anthropic API (optional)               → live LIHTC comp rent research
+// 3. RSMeans factors + regional benchmarks  → construction costs + opex
+
+// RSMeans 2024 location cost factors by state (wood-frame LIHTC, national base = $188/SF)
+const RSMEANS = {
+  AL:0.77,AK:1.28,AZ:0.88,AR:0.74,CA:1.28,CO:0.96,CT:1.14,DE:1.02,
+  FL:0.89,GA:0.82,HI:1.35,ID:0.84,IL:1.16,IN:0.94,IA:0.94,KS:0.87,
+  KY:0.89,LA:0.82,ME:0.94,MD:1.06,MA:1.25,MI:1.04,MN:1.12,MS:0.73,
+  MO:0.97,MT:0.91,NE:0.89,NV:1.02,NH:1.07,NJ:1.22,NM:0.84,NY:1.35,
+  NC:0.79,ND:0.89,OH:1.02,OK:0.82,OR:1.07,PA:1.09,RI:1.13,SC:0.77,
+  SD:0.84,TN:0.83,TX:0.86,UT:0.91,VT:0.98,VA:0.94,WA:1.12,WV:0.92,
+  WI:1.05,WY:0.91,DC:1.18,PR:0.75,
+};
+const BASE_COST_SF = 188;
+
+const REGION_MAP = {
+  northeast:   ['CT','ME','MA','NH','NJ','NY','PA','RI','VT'],
+  midatlantic: ['DC','DE','MD','VA','WV'],
+  southeast:   ['AL','AR','FL','GA','KY','LA','MS','NC','SC','TN'],
+  midwest:     ['IL','IN','IA','KS','MI','MN','MO','NE','ND','OH','SD','WI'],
+  southwest:   ['AZ','NM','OK','TX'],
+  mountain:    ['CO','ID','MT','NV','UT','WY'],
+  pacific:     ['AK','CA','HI','OR','WA'],
+};
+const OPEX = {
+  northeast:   {vacancy_pct:5,mgmt_pct:8,maintenance:950, utilities:800,insurance:600,admin:450,tax:0,services:250,other:200,reserve:475,other_income_pu:350},
+  midatlantic: {vacancy_pct:6,mgmt_pct:8,maintenance:850, utilities:700,insurance:500,admin:400,tax:0,services:225,other:175,reserve:425,other_income_pu:300},
+  southeast:   {vacancy_pct:7,mgmt_pct:8,maintenance:800, utilities:650,insurance:450,admin:350,tax:0,services:200,other:150,reserve:400,other_income_pu:250},
+  midwest:     {vacancy_pct:7,mgmt_pct:8,maintenance:850, utilities:725,insurance:500,admin:400,tax:0,services:200,other:175,reserve:410,other_income_pu:275},
+  southwest:   {vacancy_pct:7,mgmt_pct:8,maintenance:800, utilities:700,insurance:475,admin:375,tax:0,services:200,other:150,reserve:400,other_income_pu:250},
+  mountain:    {vacancy_pct:6,mgmt_pct:8,maintenance:875, utilities:650,insurance:500,admin:400,tax:0,services:225,other:175,reserve:425,other_income_pu:300},
+  pacific:     {vacancy_pct:5,mgmt_pct:8,maintenance:1050,utilities:750,insurance:650,admin:500,tax:0,services:300,other:200,reserve:500,other_income_pu:400},
+};
+const SOFT = {
+  northeast:   {home:600000,cdbg:100000,ahp:350000,state_gap:1000000},
+  midatlantic: {home:500000,cdbg:0,     ahp:300000,state_gap:750000},
+  southeast:   {home:400000,cdbg:0,     ahp:250000,state_gap:500000},
+  midwest:     {home:450000,cdbg:0,     ahp:275000,state_gap:600000},
+  southwest:   {home:350000,cdbg:0,     ahp:250000,state_gap:500000},
+  mountain:    {home:400000,cdbg:0,     ahp:250000,state_gap:600000},
+  pacific:     {home:750000,cdbg:150000,ahp:400000,state_gap:1500000},
+};
+function getRegion(state){for(const[r,ss]of Object.entries(REGION_MAP))if(ss.includes(state))return r;return 'midwest';}
+
+// ── CREDENTIAL HELPERS ────────────────────────────────────────────────────────
+function getHUDToken(){return document.getElementById('hudToken')?.value?.trim()||'';}
+function getAnthropicKey(){return document.getElementById('anthropicKey')?.value?.trim()||'';}
+function updateTokenStatus(){
+  const h=getHUDToken(), a=getAnthropicKey();
+  const el=document.getElementById('tokenStatus');
+  if(!el) return;
+  const parts=[];
+  if(h) parts.push('<span style="color:var(--green)">✓ HUD</span>');
+  else  parts.push('<span style="color:var(--red)">✗ HUD required</span>');
+  if(a) parts.push('<span style="color:var(--green)">✓ Anthropic</span>');
+  else  parts.push('<span style="color:var(--dimmer)">○ Comps: off</span>');
+  el.innerHTML=parts.join(' · ');
+}
+
+function showErrorModal(msg){
+  document.getElementById('loadingOverlay').classList.remove('show');
+  const d=document.createElement('div');
+  d.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#0c1a2e;border:1px solid #f43f5e;border-radius:12px;padding:28px 32px;max-width:520px;z-index:700;font-family:Barlow,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,.9)';
+  d.innerHTML=`<div style="font-size:13px;font-weight:700;color:#f43f5e;margin-bottom:12px">⚠ Analysis Error</div>
+    <div style="font-size:12px;color:#94a3b8;line-height:1.7;white-space:pre-wrap">${msg}</div>
+    <button onclick="this.parentElement.remove()" style="margin-top:18px;padding:7px 20px;background:#10b981;border:none;border-radius:6px;color:#000;font-weight:700;cursor:pointer;font-size:12px">OK</button>`;
+  document.body.appendChild(d);
+}
+
+// ── HUD USER API ──────────────────────────────────────────────────────────────
+const HUD_BASE = 'https://www.huduser.gov/hudapi/public';
+
+async function hudFetch(path, token) {
+  const r = await fetch(`${HUD_BASE}${path}`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  if (r.status === 401) throw new Error('HUD token invalid or expired.\nGet a new one at: https://www.huduser.gov/portal/dataset/api/token');
+  if (!r.ok) {
+    const txt = await r.text().catch(()=>'');
+    throw new Error(`HUD API error ${r.status}${txt ? ': ' + txt.slice(0,200) : ''}`);
+  }
+  return r.json();
+}
+
+// Fetch HUD 2026 Fair Market Rents for a county/entity
+async function fetchHUDFMR(entityId, token) {
+  const d = await hudFetch(`/fmr/data/${entityId}`, token);
+  const basic = d?.data?.basicdata?.[0] || {};
+  const areaName = d?.data?.area_name || d?.data?.areaname || '';
+  const get = (...keys) => { for(const k of keys){ const v=parseInt(basic[k]); if(v>0) return v; } return 0; };
+  return {
+    areaName,
+    studio: get('Efficiency','efficiency','br0','Zero-Bedroom'),
+    '1br':  get('One-Bedroom','one_bedroom','br1'),
+    '2br':  get('Two-Bedroom','two_bedroom','br2'),
+    '3br':  get('Three-Bedroom','three_bedroom','br3'),
+    '4br':  get('Four-Bedroom','four_bedroom','br4'),
+  };
+}
+
+// Fetch HUD 2026 Income Limits for a county/entity
+async function fetchHUDIL(entityId, token) {
+  const d = await hudFetch(`/il/data/${entityId}`, token);
+  const data = d?.data || {};
+  const areaName = data.area_name || data.areaname || '';
+  const median = parseInt(data.median || data.Median || 0);
+
+  // HUD publishes Very Low (50% AMI) and Low (80% AMI) directly.
+  // 60% AMI = 120% × 50% limits (standard LIHTC calculation).
+  // HUD field names vary; handle both naming conventions.
+  const vl = data.VeryLow || data.verylow || data.very_low || {};
+  const p = (n) => parseInt(vl[`p${n}`] || vl[`P${n}`] || vl[`il50_p${n}`] || 0);
+
+  const il50 = { p1:p(1),p2:p(2),p3:p(3),p4:p(4),p5:p(5),p6:p(6),p7:p(7),p8:p(8) };
+  // If VeryLow parse failed, try direct field names
+  if (!il50.p1 && data.il50_p1) {
+    for(let i=1;i<=8;i++) il50[`p${i}`]=parseInt(data[`il50_p${i}`]||0);
+  }
+
+  const il60 = {};
+  for(let i=1;i<=8;i++) il60[`p${i}`] = Math.round((il50[`p${i}`]||0) * 1.20);
+
+  if (!il50.p4) throw new Error(`Income limit data missing for entity ${entityId}. Try a nearby ZIP/address.\nRaw response keys: ${Object.keys(data).join(', ')}`);
+
+  return { median, il50, il60, areaName };
+}
+
+// ── MAX LIHTC RENT CALCULATION ────────────────────────────────────────────────
+// Max gross rent = (income limit for household size) × 30% ÷ 12
+// Occupancy: Studio=1p, 1BR=1.5p, 2BR=3p, 3BR=4.5p
+function calcMaxRents(il) {
+  const r = (il_val) => Math.round((il_val||0) * 0.30 / 12);
+  const avg = (a,b) => Math.round(((a||0)+(b||0))/2 * 0.30 / 12);
+  return {
+    studio: { 50: r(il.il50.p1),              60: r(il.il60.p1) },
+    '1br':  { 50: avg(il.il50.p1,il.il50.p2), 60: avg(il.il60.p1,il.il60.p2) },
+    '2br':  { 50: r(il.il50.p3),              60: r(il.il60.p3) },
+    '3br':  { 50: avg(il.il50.p4,il.il50.p5), 60: avg(il.il60.p4,il.il60.p5) },
+  };
+}
+
+// ── ANTHROPIC COMP RENT RESEARCH ─────────────────────────────────────────────
+async function fetchCompRents(geo, maxRents, fmr, key) {
+  const cityState = [geo.city, geo.state].filter(Boolean).join(', ');
+  const metroArea = geo.metro || geo.county || cityState;
+  const prompt = `You are a LIHTC underwriter. Find ACTUAL achievable rents at LIHTC (income-restricted, affordable housing) properties — NOT market-rate rents.
+
+Project location: ${geo.matchedAddr || geo.city+', '+geo.state}
+Metro area: ${metroArea}
+
+SEARCH SPECIFICALLY FOR:
+1. "${cityState} LIHTC apartments rents" and "${metroArea} affordable housing rents income restricted"
+2. "${geo.state} housing finance agency LIHTC allocation 2023 2024 2025 ${cityState}" — find awarded projects with published rents
+3. Apartments.com, AffordableHousing.com, GoSection8 listings for income-restricted units in ${metroArea}
+4. National Housing Preservation Database (NHPD) for LIHTC properties in ${geo.county || geo.state}
+5. "${cityState} tax credit apartment rents" and "Section 42 apartment rents ${metroArea}"
+6. "${geo.state} LIHTC construction cost affordable housing 2024 2025" for hard cost benchmarks
+
+HUD 2026 MAXIMUM LIHTC rents (achievable comps must be ≤ these):
+- Studio 50% AMI: $${maxRents?.studio?.[50]||'?'}/mo | 60% AMI: $${maxRents?.studio?.[60]||'?'}/mo
+- 1BR   50% AMI: $${maxRents?.['1br']?.[50]||'?'}/mo | 60% AMI: $${maxRents?.['1br']?.[60]||'?'}/mo
+- 2BR   50% AMI: $${maxRents?.['2br']?.[50]||'?'}/mo | 60% AMI: $${maxRents?.['2br']?.[60]||'?'}/mo
+- 3BR   50% AMI: $${maxRents?.['3br']?.[50]||'?'}/mo | 60% AMI: $${maxRents?.['3br']?.[60]||'?'}/mo
+HUD 2026 FMR: Studio=$${fmr?.studio||'?'} 1BR=$${fmr?.['1br']||'?'} 2BR=$${fmr?.['2br']||'?'} 3BR=$${fmr?.['3br']||'?'}
+
+For each unit type, return the achievable comp rent — what tenants are ACTUALLY paying at comparable LIHTC properties, which may be below the HUD maximum. If comps show rents below HUD max, use the comp figure.
+
+Return ONLY raw JSON (no markdown, no explanation):
+{
+  "comp_rents": {
+    "studio": {"50": number_or_null, "60": number_or_null},
+    "1br":    {"50": number_or_null, "60": number_or_null},
+    "2br":    {"50": number_or_null, "60": number_or_null},
+    "3br":    {"50": number_or_null, "60": number_or_null}
+  },
+  "construction_cost_sf": number,
+  "construction_notes": "source and rationale for the construction cost",
+  "comp_properties": [
+    "Property Name, City — X units, built YEAR, 1BR=$X/mo at Y% AMI"
+  ],
+  "market_notes": "2-3 sentence LIHTC market assessment: demand drivers, recent lease-up absorption, competition",
+  "sources": ["specific sources found"]
+}`;
+
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 2500,
+      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+
+  if (r.status === 401) throw new Error('Anthropic key invalid. Check console.anthropic.com');
+  if (!r.ok) throw new Error(`Anthropic API ${r.status}`);
+  const d = await r.json();
+  const text = (d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+  const m = text.match(/\{[\s\S]*\}/);
+  if (!m) throw new Error('Could not parse comp data from response');
+  return JSON.parse(m[0]);
+}
+
+// ── UNIT MIX BUILDER ─────────────────────────────────────────────────────────
+function buildUnitMix(maxRents, achievable) {
+  return [
+    {type:'Studio',count:5, ami:60, rent:achievable?.studio?.[60]||maxRents?.studio?.[60]||0, hudMax:maxRents?.studio?.[60]||0},
+    {type:'1BR',   count:15,ami:60, rent:achievable?.['1br']?.[60]||maxRents?.['1br']?.[60]||0, hudMax:maxRents?.['1br']?.[60]||0},
+    {type:'2BR',   count:22,ami:60, rent:achievable?.['2br']?.[60]||maxRents?.['2br']?.[60]||0, hudMax:maxRents?.['2br']?.[60]||0},
+    {type:'3BR',   count:8, ami:60, rent:achievable?.['3br']?.[60]||maxRents?.['3br']?.[60]||0, hudMax:maxRents?.['3br']?.[60]||0},
+  ];
+}
+
+// ── MAIN ANALYSIS ─────────────────────────────────────────────────────────────
+async function runAnalysis() {
+  const addr     = document.getElementById('addrInput').value.trim();
+  const hudToken = getHUDToken();
+  const anthropicKey = getAnthropicKey();
+
+  if (!addr) { alert('Please enter a project address.'); return; }
+  if (!hudToken) {
+    showErrorModal(
+      'A HUD API token is required for live 2026 income limits and fair market rents.\n\n' +
+      'Get your free token (5 minutes, no payment):\n' +
+      '1. Go to https://www.huduser.gov/portal/dataset/api/token\n' +
+      '2. Register with your email\n' +
+      '3. Copy the token and paste it in the HUD Token field'
+    );
+    return;
+  }
+
+  document.getElementById('loadingOverlay').classList.add('show');
+  document.getElementById('analyzeBtn').disabled = true;
+  [1,2,3,4,5,6,7].forEach(i => lsStep(i,''));
+
+  try {
+    // ── STEP 1: Geocode ────────────────────────────────────────────────────────
+    lsStep(1,'active');
+    const geo = await geocodeAddress(addr);
+    if (!geo?.countyFips) throw new Error(
+      'Could not geocode this address.\nTry a more specific address with city and state:\ne.g. "123 Main St, Richmond VA 23219"'
+    );
+    const entityId = geo.countyFips; // 5-digit county FIPS for HUD API
+    lsStep(1,'done');
+
+    // ── STEP 2: HUD Income Limits ──────────────────────────────────────────────
+    lsStep(2,'active');
+    let il;
+    try {
+      il = await fetchHUDIL(entityId, hudToken);
+    } catch(e) {
+      // Some counties may not have direct IL data — try state level
+      const stateFips = entityId.slice(0,2);
+      try {
+        il = await fetchHUDIL(stateFips, hudToken);
+        il.areaName = (il.areaName||'') + ' (state-level)';
+      } catch(_) { throw e; } // rethrow original if state also fails
+    }
+    lsStep(2,'done', il.areaName || '');
+
+    // ── STEP 3: HUD Fair Market Rents ─────────────────────────────────────────
+    lsStep(3,'active');
+    let fmr;
+    try {
+      fmr = await fetchHUDFMR(entityId, hudToken);
+    } catch(_) {
+      fmr = await fetchHUDFMR(entityId.slice(0,2), hudToken); // state fallback
+    }
+    lsStep(3,'done', fmr.areaName || '');
+
+    // ── STEP 4: Calculate Max LIHTC Rents ─────────────────────────────────────
+    lsStep(4,'active');
+    const maxRents = calcMaxRents(il);
+    lsStep(4,'done');
+
+    // ── STEP 5: Anthropic Comp Research (optional) ─────────────────────────────
+    lsStep(5, anthropicKey ? 'active' : 'skip',
+           anthropicKey ? '' : 'No key — using HUD limits as achievable rents');
+    let compData = null;
+    if (anthropicKey) {
+      try {
+        compData = await fetchCompRents(geo, maxRents, fmr, anthropicKey);
+        lsStep(5,'done', `${compData?.comp_properties?.length||0} comps found`);
+      } catch(e) {
+        console.warn('Comp research failed:', e.message);
+        lsStep(5,'err', 'Comp research failed — using HUD limits');
+      }
+    }
+
+    // ── STEP 6: Construction & Operating Benchmarks ────────────────────────────
+    lsStep(6,'active');
+    const region  = getRegion(geo.state);
+    const opex    = OPEX[region];
+    const soft    = SOFT[region];
+    const factor  = RSMEANS[geo.state] || 1.0;
+    const costSF  = compData?.construction_cost_sf || Math.round(BASE_COST_SF * factor);
+    lsStep(6,'done');
+
+    // ── STEP 7: Assemble & Populate ────────────────────────────────────────────
+    lsStep(7,'active');
+
+    // Achievable rents: prefer comps, cap at HUD max, fallback to 92% of FMR
+    const achievable = {};
+    for (const type of ['studio','1br','2br','3br']) {
+      achievable[type] = {};
+      for (const pct of [50,60]) {
+        const hMax  = maxRents[type]?.[pct] || 0;
+        const comp  = compData?.comp_rents?.[type]?.[pct];
+        const fmrV  = fmr[type === 'studio' ? 'studio' : type] || 0;
+        if (comp && comp > 0) {
+          achievable[type][pct] = Math.min(comp, hMax);          // comp, capped at HUD max
+        } else {
+          achievable[type][pct] = fmrV > 0
+            ? Math.min(hMax, Math.round(fmrV * 0.92))            // 92% of FMR, capped
+            : hMax;
+        }
+      }
+    }
+
+    const ami  = il.median;
+    const tier = ami>105000?'high-cost':ami>72000?'moderate-cost':'lower-cost';
+    const rname = region.charAt(0).toUpperCase()+region.slice(1).replace('midatlantic','Mid-Atlantic');
+
+    const sources = [
+      `HUD 2026 Income Limits — ${il.areaName}`,
+      `HUD 2026 Fair Market Rents — ${fmr.areaName}`,
+      ...(compData?.sources||[]),
+      compData ? 'Anthropic Web Search — LIHTC Comp Research' : `RSMeans ${geo.state} Location Factor`,
+    ].filter(Boolean);
+
+    const data = {
+      location_summary:
+        compData?.market_notes ||
+        `${il.areaName||geo.county} is a ${tier} ${rname} market. ` +
+        `HUD 2026 AMI: $${ami.toLocaleString()}. ` +
+        `FMR 2BR: $${(fmr['2br']||0).toLocaleString()}/mo. ` +
+        `Max LIHTC 2BR at 60% AMI: $${(maxRents['2br']?.[60]||0).toLocaleString()}/mo.`,
+      area_median_income:  ami,
+      metro_name:          il.areaName || fmr.areaName || geo.metro || geo.county,
+      hud_income_limits: {
+        '50pct': {
+          '1person':il.il50.p1,'2person':il.il50.p2,'3person':il.il50.p3,'4person':il.il50.p4
+        },
+        '60pct': {
+          '1person':il.il60.p1,'2person':il.il60.p2,'3person':il.il60.p3,'4person':il.il60.p4
+        },
+      },
+      max_lihtc_rents:    maxRents,
+      fmr,
+      achievable_rents:   achievable,
+      suggested_units:    buildUnitMix(maxRents, achievable),
+      total_suggested_units: 50,
+      operating:          opex,
+      construction_cost_sf: costSF,
+      construction_notes: compData?.construction_notes ||
+        `RSMeans ${geo.state} factor ${factor.toFixed(2)} × $${BASE_COST_SF}/SF base = $${costSF}/SF`,
+      soft_sources:       soft,
+      equity_price:       0.87,
+      comp_properties:    compData?.comp_properties || [],
+      sources_cited:      sources,
+    };
+
+    populateFromData(data, geo);
+    locationData = data;
+    lsStep(7,'done');
+    await new Promise(r=>setTimeout(r,400));
+    showResultBar(data, geo);
+
+  } catch(e) {
+    console.error(e);
+    showErrorModal(e.message);
+  } finally {
+    document.getElementById('loadingOverlay').classList.remove('show');
+    document.getElementById('analyzeBtn').disabled = false;
+  }
+}
+
+
+// ── POPULATE FROM ANALYSIS DATA ───────────────────────────────────────────────
+function populateFromData(d, geo){
+  // Unit mix
+  if(d.suggested_units?.length){
+    units=d.suggested_units.map((u,i)=>({
+      id:uidc++, type:u.type, count:u.count, ami:u.ami,
+      rent:u.rent, hudMax:u.hudMax||0, _ap:true
+    }));
+    renderUnits();
+
+    // Auto-calc GBA
+    const sfMap={Studio:550,'1BR':750,'2BR':1000,'3BR':1250,'4BR':1450};
+    const totalSF=units.reduce((s,u)=>s+(u.count||0)*(sfMap[u.type]||900),0);
+    const gba=Math.round(totalSF*1.18/100)*100; // add 18% common area
+    setF('gba',d.gba_per_unit_sf ? d.total_suggested_units*d.gba_per_unit_sf : gba);
+  }
+
+  // Operating expenses
+  if(d.operating){
+    const o=d.operating;
+    if(o.vacancy_pct)   setF('vacRate',o.vacancy_pct);
+    if(o.mgmt_pct)      setF('eMgmt',o.mgmt_pct);
+    if(o.maintenance)   setF('eMaint',o.maintenance);
+    if(o.utilities)     setF('eUtil',o.utilities);
+    if(o.insurance)     setF('eIns',o.insurance);
+    if(o.admin)         setF('eAdmin',o.admin);
+    if(o.tax!=null)     setF('eTax',o.tax);
+    if(o.services)      setF('eServices',o.services);
+    if(o.other)         setF('eOther',o.other);
+    if(o.reserve)       setF('eReserve',o.reserve);
+    if(o.other_income_pu) setF('otherInc',o.other_income_pu);
+  }
+
+  // Construction costs
+  if(d.construction_cost_sf) setF('costSF',Math.round(d.construction_cost_sf));
+  if(d.equity_price)         setF('equityPrice',d.equity_price);
+
+  // Soft sources
+  if(d.soft_sources){
+    const s=d.soft_sources;
+    if(s.home)      setF('home',s.home);
+    if(s.cdbg)      setF('cdbg',s.cdbg);
+    if(s.ahp)       setF('ahp',s.ahp);
+    if(s.state_gap) setF('stateGap',s.state_gap);
+  }
+
+  // HUD rent reference table
+  if(d.max_lihtc_rents){
+    document.getElementById('rentRef').style.display='block';
+    document.getElementById('rr-area').textContent=d.metro_name||geo?.metro||'';
+    const tbody=document.getElementById('rrtBody');
+    const types=['studio','1br','2br','3br'];
+    const labels=['Studio','1 BR','2 BR','3 BR'];
+    tbody.innerHTML=types.map((t,i)=>{
+      const max50=d.max_lihtc_rents[t]?.['50']||0;
+      const max60=d.max_lihtc_rents[t]?.['60']||0;
+      const fmr=d.fmr?.[t]||0;
+      const comp=d.achievable_rents?.[t]?.['60']||0;
+      const overMax=comp>max60;
+      return `<tr>
+        <td>${labels[i]}</td>
+        <td>${max50?'$'+max50.toLocaleString():'—'}</td>
+        <td>${max60?'$'+max60.toLocaleString():'—'}</td>
+        <td class="fmr">${fmr?'$'+fmr.toLocaleString():'—'}</td>
+        <td class="comp ${overMax?'warning':''}">${comp?'$'+comp.toLocaleString()+(overMax?' ⚠':''):'—'}</td>
+      </tr>`;
+    }).join('');
+    switchTab('units');
+  }
+
+  recalc();
+}
+
+function showResultBar(d, geo){
+  const rb=document.getElementById('resultBar');
+  rb.innerHTML=`
+    <div class="rb-section">
+      <div class="rb-label">MARKET</div>
+      <div class="rb-val">${d.metro_name||geo?.county||''}, ${geo?.state||''}</div>
+      <div class="rb-sub">${d.total_suggested_units||0} units suggested</div>
+    </div>
+    <div class="rb-section">
+      <div class="rb-label">AREA MEDIAN INCOME</div>
+      <div class="rb-val">$${(d.area_median_income||0).toLocaleString()}</div>
+      <div class="rb-sub">60% AMI 4-person: $${(d.hud_income_limits?.['60pct']?.['4person']||0).toLocaleString()}</div>
+    </div>
+    <div class="rb-section">
+      <div class="rb-label">60% AMI RENTS (COMP)</div>
+      <div class="rb-val">${d.achievable_rents?.['1br']?.['60']?'$'+(d.achievable_rents['1br']['60']).toLocaleString():''} 1BR</div>
+      <div class="rb-sub">FMR 1BR: $${(d.fmr?.['1br']||0).toLocaleString()}</div>
+    </div>
+    <div class="rb-section">
+      <div class="rb-label">CONSTRUCTION COST</div>
+      <div class="rb-val">$${(d.construction_cost_sf||0).toLocaleString()}/SF</div>
+      <div class="rb-sub">${d.construction_notes?.slice(0,50)||''}</div>
+    </div>
+    <div class="rb-section" style="flex:2">
+      <div class="rb-label">MARKET SUMMARY</div>
+      <div style="font-size:11px;color:var(--dim);line-height:1.5">${d.location_summary||''}</div>
+    </div>`;
+  const tags=document.getElementById('srcTags');
+  tags.innerHTML=(d.sources_cited||[]).slice(0,6).map(s=>`<span class="src-tag">${s}</span>`).join('');
+  document.getElementById('analysisResult').style.display='block';
+  // Show market card in results
+  renderMarketCard(d);
+}
+
+function renderMarketCard(d){
+  const mc=document.getElementById('marketCard');
+  mc.style.display='block';
+  mc.querySelector('.mc-body').innerHTML=`
+    <div class="mc-stat"><div class="mc-val">$${(d.area_median_income||0).toLocaleString()}</div><div class="mc-lbl">AREA MEDIAN INCOME</div></div>
+    <div class="mc-stat"><div class="mc-val">$${(d.achievable_rents?.['1br']?.['60']||0).toLocaleString()}</div><div class="mc-lbl">COMP RENT 1BR 60%</div></div>
+    <div class="mc-stat"><div class="mc-val">$${(d.achievable_rents?.['2br']?.['60']||0).toLocaleString()}</div><div class="mc-lbl">COMP RENT 2BR 60%</div></div>
+    <div class="mc-stat"><div class="mc-val">$${(d.fmr?.['2br']||0).toLocaleString()}</div><div class="mc-lbl">FMR 2BR</div></div>
+    <div class="mc-stat"><div class="mc-val">$${(d.construction_cost_sf||0)}/SF</div><div class="mc-lbl">CONSTRUCTION COST</div></div>
+    <div class="mc-stat"><div class="mc-val">$${((d.soft_sources?.home||0)+(d.soft_sources?.ahp||0)+(d.soft_sources?.state_gap||0)).toLocaleString()}</div><div class="mc-lbl">AVAIL. SOFT SOURCES</div></div>
+    <div class="mc-note">${d.location_summary||''}</div>`;
+  mc.querySelector('.mc-header').innerHTML=`📍 ${d.metro_name||''} — Data Sources: ${(d.sources_cited||[]).slice(0,3).join(' · ')}`;
+}
+
+function clearAnalysis(){
+  locationData=null;
+  document.getElementById('addrInput').value='';
+  document.getElementById('analysisResult').style.display='none';
+  document.getElementById('rentRef').style.display='none';
+  document.getElementById('marketCard').style.display='none';
+  document.querySelectorAll('.ap').forEach(el=>el.classList.remove('ap'));
+}
+
+// ── CALCULATION ───────────────────────────────────────────────────────────────
+function calculate(){
+  const totU=units.reduce((s,u)=>s+(u.count||0),0);
+  const ltcU=units.filter(u=>u.ami!=='Market').reduce((s,u)=>s+(u.count||0),0);
+  const gpr=units.reduce((s,u)=>s+(u.count||0)*(u.rent||0)*12,0);
+  const otherI=v('otherInc')*totU;
+  const gpi=gpr+otherI;
+  const vacL=gpi*(v('vacRate')/100);
+  const egi=gpi-vacL;
+  const mgmt=egi*(v('eMgmt')/100);
+  const pupy=(v('eMaint')+v('eUtil')+v('eIns')+v('eAdmin')+v('eTax')+v('eServices')+v('eOther'))*totU;
+  const reserve=v('eReserve')*totU;
+  const toe=mgmt+pupy+reserve;
+  const noi=egi-toe;
+  const oer=egi>0?toe/egi:0;
+
+  const gba=v('gba');
+  const constBase=gba*v('costSF');
+  const contAmt=constBase*(v('hardCont')/100);
+  const totalHard=constBase+contAmt+v('siteWork')+v('ffe');
+  const archAmt=v('arch')>0?v('arch'):totalHard*(v('archPct')/100);
+  const miscSoftAmt=totalHard*(v('miscSoft')/100);
+  const totalSoft=archAmt+v('enviro')+v('title')+v('legalDev')+v('legalLend')+
+    v('mktStudy')+v('appraisal')+v('acctg')+v('lihtcFee')+v('lendInsp')+miscSoftAmt;
+
+  const mr=v('intRate')/100/12;
+  const nAm=vi('amortYrs')*12;
+  const annC=mr>0?(mr*Math.pow(1+mr,nAm)/(Math.pow(1+mr,nAm)-1))*12:0.035;
+  const estLoan=annC>0?noi/v('dscrTgt')/annC*0.8:0;
+  const idcAmt=estLoan*0.6*(v('constRate')/100)*(vi('constMos')/12);
+  const origFee=estLoan*(v('origPct')/100);
+  const finCosts=idcAmt+origFee+v('otherFinCosts');
+
+  const nonQual=v('legalLend')+v('lendInsp');
+  const basisPreDev=constBase+contAmt+v('siteWork')+v('ffe')+(totalSoft-nonQual);
+  const devFeeTotal=basisPreDev*(v('devFeePct')/100);
+  const devFeeDeferred=devFeeTotal*(v('deferPct')/100);
+  const opRes=v('eOpRes');
+  const tdc=v('land')+v('reloc')+totalHard+totalSoft+finCosts+devFeeTotal+opRes;
+  const tdcU=totU>0?tdc/totU:0;
+
+  const eligBasis=basisPreDev+devFeeTotal;
+  const boost=isQCT?1.30:1.00;
+  const adjBasis=eligBasis*boost;
+  const cRate=dealType==='4pct'?(v('creditRate4')||3.64)/100:0.09;
+  const annCred=adjBasis*cRate;
+  const tenYrCred=annCred*10;
+  const equity=tenYrCred*(v('equityPrice')||0);
+  const credU=ltcU>0?annCred/ltcU:0;
+
+  const maxDSCR=annC>0?noi/v('dscrTgt')/annC:0;
+  const maxLTV=tdc*(v('ltvMax')/100);
+  const firstMtg=Math.max(0,Math.min(maxDSCR,maxLTV));
+  const ds=firstMtg*annC;
+  const dscr=ds>0?noi/ds:0;
+  const ltv=tdc>0?firstMtg/tdc:0;
+  const debtU=totU>0?firstMtg/totU:0;
+
+  const softSrc=v('home')+v('cdbg')+v('ahp')+v('stateGap')+v('localFunds')+v('otherGrants');
+  const totalSrc=firstMtg+equity+softSrc+devFeeDeferred;
+  const gap=tdc-totalSrc;
+  const bond=v('bondAmt')||firstMtg;
+  const passes50=dealType==='4pct'?bond/eligBasis>=0.50:null;
+
+  const sensitRent=[-0.10,-0.05,0,0.05,0.10].map(rc=>{
+    const sGPR=gpr*(1+rc);
+    const sEGI=(sGPR+otherI)*(1-v('vacRate')/100);
+    const sNOI=sEGI*(1-v('eMgmt')/100)-pupy-reserve;
+    const sLoan=annC>0?Math.max(0,Math.min(sNOI/v('dscrTgt')/annC,maxLTV)):0;
+    return {rc, gap:tdc-(sLoan+equity+softSrc+devFeeDeferred)};
+  });
+  const sensitCost=[-20,-10,0,10,20].map(sc=>{
+    const sH=(v('costSF')+sc)*gba+contAmt+v('siteWork')+v('ffe');
+    const sBasis=sH*(1+v('hardCont')/100)+(totalSoft-nonQual);
+    const sCred=sBasis*boost*cRate*10*(v('equityPrice')||0);
+    const sTDC=v('land')+v('reloc')+sH+totalSoft+finCosts+devFeeTotal+opRes;
+    return {sc, gap:sTDC-(firstMtg+sCred+softSrc+devFeeDeferred)};
+  });
+
+  return {totU,ltcU,gpr,otherI,gpi,vacL,egi,mgmt,pupy,reserve,toe,noi,oer,
+    constBase,contAmt,totalHard,archAmt,totalSoft,idcAmt,origFee,finCosts,
+    devFeeTotal,devFeeDeferred,opRes,tdc,tdcU,
+    eligBasis,adjBasis,boost,cRate,annCred,tenYrCred,equity,credU,
+    firstMtg,ds,dscr,ltv,debtU,annC,
+    softSrc,totalSrc,gap,passes50,bond,
+    sensitRent,sensitCost};
+}
+
+function dcol(d){return d>=1.20?'c-g':d>=1.10?'c-a':'c-r'}
+function lcol(l){return l<=0.80?'c-g':l<=0.90?'c-a':'c-r'}
+function gcol(g){return g<=0?'c-g':g<200000?'c-a':'c-r'}
+function gdot(g){return g<=0?'bg-g':g<200000?'bg-a':'bg-r'}
+function sc(g,b){return Math.abs(g-b)<1000?'':g<b?'g':'r'}
+
+function renderResults(R){
+  document.getElementById('boostDisplay').value=isQCT?'130% (QCT/DDA)':'100% (no boost)';
+  const P=document.getElementById('resultsPanel');
+  const gap=R.gap, gFmt=fmt(Math.abs(gap));
+  const sRows=R.sensitRent.map(s=>`<tr class="${s.rc===0?'base':''}">
+    <td>${s.rc===0?'Base':(s.rc>0?'+':'')+Math.round(s.rc*100)+'%'}</td>
+    <td class="${sc(s.gap,gap)}">${fmt(Math.abs(s.gap))}</td>
+    <td class="${s.gap<=0?'g':'r'}">${s.gap<=0?'✓ Funded':'Gap'}</td></tr>`).join('');
+  const cRows=R.sensitCost.map(s=>`<tr class="${s.sc===0?'base':''}">
+    <td>${s.sc===0?'Base':(s.sc>0?'+':'')+s.sc+'/SF'}</td>
+    <td class="${sc(s.gap,gap)}">${fmt(Math.abs(s.gap))}</td>
+    <td class="${s.gap<=0?'g':'r'}">${s.gap<=0?'✓ Funded':'Gap'}</td></tr>`).join('');
+  const test50=R.passes50===null?'':`<div class="li">
+    <span class="li-l">50% Bond Test (4% required)</span>
+    <span class="li-v"><span style="padding:3px 10px;border-radius:5px;font-size:11px;font-weight:600;background:${R.passes50?'rgba(16,185,129,.15)':'rgba(244,63,94,.15)'};color:${R.passes50?'var(--green)':'var(--red)'}">
+      ${R.passes50?'✓ PASSES':'✗ FAILS'} ${(R.bond/R.eligBasis*100).toFixed(1)}%</span></span></div>`;
+
+  P.innerHTML=`
+    <div id="marketCard" style="display:none;background:var(--surf);border:1px solid var(--blue);border-radius:10px;overflow:hidden">
+      <div class="mc-header" style="background:rgba(56,189,248,.1);padding:10px 16px;border-bottom:1px solid rgba(56,189,248,.2);font-size:12px;font-weight:600;color:var(--blue)"></div>
+      <div class="mc-body" style="padding:12px 16px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px"></div>
+    </div>
+
+    <div class="verdict-row">
+      <div class="vc"><div class="vc-dot ${dcol(R.dscr).replace('c-','bg-')}"></div>
+        <div class="vc-lbl">DSCR</div>
+        <div class="vc-val ${dcol(R.dscr)}">${fmtN(R.dscr,2)}x</div>
+        <div class="vc-sub">Target ≥${fmtN(v('dscrTgt'),2)}x</div></div>
+      <div class="vc"><div class="vc-dot ${lcol(R.ltv).replace('c-','bg-')}"></div>
+        <div class="vc-lbl">LOAN TO COST</div>
+        <div class="vc-val ${lcol(R.ltv)}">${pct(R.ltv)}</div>
+        <div class="vc-sub">Max ${vi('ltvMax')}% · ${fmt(R.firstMtg)}</div></div>
+      <div class="vc"><div class="vc-dot ${gdot(gap)}"></div>
+        <div class="vc-lbl">${gap>0?'UNFUNDED GAP':'SURPLUS'}</div>
+        <div class="vc-val ${gcol(gap)}">${gap>0?'+':'-'}${gFmt}</div>
+        <div class="vc-sub">TDC: ${fmtM(R.tdc)}</div></div>
+      <div class="vc"><div class="vc-dot bg-g"></div>
+        <div class="vc-lbl">ANNUAL CREDIT</div>
+        <div class="vc-val c-g">${fmtM(R.annCred)}</div>
+        <div class="vc-sub">${fmt(R.credU)}/LIHTC unit</div></div>
+    </div>
+
+    <div class="rs"><div class="rs-hdr"><span class="rs-title">INCOME &amp; EXPENSES</span><span class="rs-tot c-g">${fmt(R.noi)} NOI</span></div>
+      <div class="li"><span class="li-l">Gross Potential Rent</span><span class="li-v">${fmt(R.gpr)}</span></div>
+      <div class="li"><span class="li-l in">Other Income (${R.totU} units)</span><span class="li-v">${fmt(R.otherI)}</span></div>
+      <div class="li sub"><span class="li-l">Gross Potential Income</span><span class="li-v">${fmt(R.gpi)}</span></div>
+      <div class="li"><span class="li-l in">Vacancy (${v('vacRate')}%)</span><span class="li-v neg">(${fmt(R.vacL)})</span></div>
+      <div class="li sub"><span class="li-l">Effective Gross Income</span><span class="li-v">${fmt(R.egi)}</span></div>
+      <div class="li-div"></div>
+      <div class="li"><span class="li-l in">Management (${v('eMgmt')}% of EGI)</span><span class="li-v neg">(${fmt(R.mgmt)})</span></div>
+      <div class="li"><span class="li-l in">Per-Unit Operating Expenses</span><span class="li-v neg">(${fmt(R.pupy)})</span></div>
+      <div class="li"><span class="li-l in">Replacement Reserve</span><span class="li-v neg">(${fmt(R.reserve)})</span></div>
+      <div class="li sub"><span class="li-l">Total Operating Expenses</span><span class="li-v neg">(${fmt(R.toe)})</span></div>
+      <div class="li tot"><span class="li-l">NET OPERATING INCOME</span><span class="li-v c-g">${fmt(R.noi)}</span></div>
+      <div class="li"><span class="li-l in">OER</span><span class="li-v ${R.oer>0.55?'amb':''}">${pct(R.oer)}</span></div>
+      <div class="li"><span class="li-l in">Debt Service (${fmtN(v('intRate'),2)}% / ${vi('amortYrs')}yr)</span><span class="li-v neg">(${fmt(R.ds)})</span></div>
+      <div class="li"><span class="li-l in">Cash Flow After Debt Service</span><span class="li-v ${R.noi-R.ds<0?'neg c-r':'c-g'}">${fmt(R.noi-R.ds)}</span></div>
+    </div>
+
+    <div class="rs"><div class="rs-hdr"><span class="rs-title">DEVELOPMENT BUDGET (USES)</span><span class="rs-tot">${fmt(R.tdc)} · ${fmt(R.tdcU)}/unit</span></div>
+      <div class="li"><span class="li-l">Land / Acquisition</span><span class="li-v">${fmt(v('land')+v('reloc'))}</span></div>
+      <div class="li"><span class="li-l in">Construction (${vi('costSF')}/SF × ${(v('gba')||0).toLocaleString()} SF)</span><span class="li-v">${fmt(R.constBase)}</span></div>
+      <div class="li"><span class="li-l in">Site Work</span><span class="li-v">${fmt(v('siteWork'))}</span></div>
+      <div class="li"><span class="li-l in">Hard Cost Contingency (${v('hardCont')}%)</span><span class="li-v">${fmt(R.contAmt)}</span></div>
+      <div class="li sub"><span class="li-l">Total Hard Costs</span><span class="li-v">${fmt(R.totalHard)}</span></div>
+      <div class="li"><span class="li-l in">Arch &amp; Engineering</span><span class="li-v">${fmt(R.archAmt)}</span></div>
+      <div class="li"><span class="li-l in">Environmental / Legal / Title / Other</span><span class="li-v">${fmt(R.totalSoft-R.archAmt)}</span></div>
+      <div class="li sub"><span class="li-l">Total Soft Costs</span><span class="li-v">${fmt(R.totalSoft)}</span></div>
+      <div class="li"><span class="li-l in">Interest During Construction</span><span class="li-v">${fmt(R.idcAmt)}</span></div>
+      <div class="li"><span class="li-l in">Origination + Other Financing</span><span class="li-v">${fmt(R.origFee+v('otherFinCosts'))}</span></div>
+      <div class="li"><span class="li-l">Developer Fee (${v('devFeePct')}% of elig. basis)</span><span class="li-v">${fmt(R.devFeeTotal)}</span></div>
+      <div class="li tot"><span class="li-l">TOTAL DEVELOPMENT COST</span><span class="li-v">${fmt(R.tdc)}</span></div>
+    </div>
+
+    <div class="rs"><div class="rs-hdr"><span class="rs-title">SOURCES &amp; USES</span><span class="rs-tot ${gap<=0?'c-g':'c-r'}">${gap<=0?'✓ Funded':'⚠ Gap: '+fmt(gap)}</span></div>
+      <div class="li"><span class="li-l in">First Mortgage</span><span class="li-v">${fmt(R.firstMtg)}</span></div>
+      <div class="li"><span class="li-l in">LIHTC Equity</span><span class="li-v c-g">${fmt(R.equity)}</span></div>
+      ${v('home')>0?`<div class="li"><span class="li-l in">HOME Funds</span><span class="li-v">${fmt(v('home'))}</span></div>`:''}
+      ${v('cdbg')>0?`<div class="li"><span class="li-l in">CDBG</span><span class="li-v">${fmt(v('cdbg'))}</span></div>`:''}
+      ${v('ahp')>0?`<div class="li"><span class="li-l in">AHP / FHLB</span><span class="li-v">${fmt(v('ahp'))}</span></div>`:''}
+      ${v('stateGap')>0?`<div class="li"><span class="li-l in">State Gap Financing</span><span class="li-v">${fmt(v('stateGap'))}</span></div>`:''}
+      ${v('localFunds')>0?`<div class="li"><span class="li-l in">Local Funds</span><span class="li-v">${fmt(v('localFunds'))}</span></div>`:''}
+      ${v('otherGrants')>0?`<div class="li"><span class="li-l in">Other Grants</span><span class="li-v">${fmt(v('otherGrants'))}</span></div>`:''}
+      <div class="li"><span class="li-l in">Deferred Developer Fee (${v('deferPct')}%)</span><span class="li-v">${fmt(R.devFeeDeferred)}</span></div>
+      <div class="li sub"><span class="li-l">Total Sources</span><span class="li-v">${fmt(R.totalSrc)}</span></div>
+      <div class="li-div"></div>
+      <div class="li tot"><span class="li-l">Total Uses</span><span class="li-v">${fmt(R.tdc)}</span></div>
+      <div class="li gap" style="background:${gap>0?'rgba(244,63,94,.07)':'rgba(16,185,129,.06)'}">
+        <span class="li-l" style="font-weight:700">${gap>0?'UNFUNDED GAP':'SURPLUS'}</span>
+        <span class="li-v ${gap>0?'c-r':'c-g'}" style="font-size:16px">${gap>0?'+':'-'}${gFmt}</span></div>
+      ${test50}
+    </div>
+
+    <div class="rs"><div class="rs-hdr"><span class="rs-title">TAX CREDIT &amp; EQUITY</span><span class="rs-tot c-g">${fmt(R.equity)}</span></div>
+      <div class="li"><span class="li-l">Eligible Basis (pre-boost)</span><span class="li-v">${fmt(R.eligBasis)}</span></div>
+      <div class="li"><span class="li-l">Basis Boost</span><span class="li-v ${isQCT?'amb':''}">${isQCT?'130% (QCT/DDA)':'100%'}</span></div>
+      <div class="li sub"><span class="li-l">Adjusted Eligible Basis</span><span class="li-v">${fmt(R.adjBasis)}</span></div>
+      <div class="li"><span class="li-l">Credit Rate</span><span class="li-v">${(R.cRate*100).toFixed(2)}%</span></div>
+      <div class="li"><span class="li-l">Annual Credit</span><span class="li-v c-g">${fmt(R.annCred)}</span></div>
+      <div class="li"><span class="li-l">10-Year Stream</span><span class="li-v">${fmt(R.tenYrCred)}</span></div>
+      <div class="li"><span class="li-l">Equity Price</span><span class="li-v">$${(v('equityPrice')||0).toFixed(2)}/credit $</span></div>
+      <div class="li tot"><span class="li-l">LIHTC EQUITY PROCEEDS</span><span class="li-v c-g">${fmt(R.equity)}</span></div>
+    </div>
+
+    <div class="rs"><div class="rs-hdr"><span class="rs-title">KEY METRICS</span></div>
+      <div class="mg">
+        <div class="mb"><div class="mb-v ${dcol(R.dscr)}">${fmtN(R.dscr,2)}x</div><div class="mb-l">DSCR</div><div class="mb-s">Target ≥${fmtN(v('dscrTgt'),2)}x</div></div>
+        <div class="mb"><div class="mb-v ${lcol(R.ltv)}">${pct(R.ltv)}</div><div class="mb-l">LOAN TO COST</div><div class="mb-s">Max ${vi('ltvMax')}%</div></div>
+        <div class="mb"><div class="mb-v">${fmt(R.tdcU)}</div><div class="mb-l">TDC / UNIT</div><div class="mb-s">${R.totU} units</div></div>
+        <div class="mb"><div class="mb-v">${fmt(R.credU)}</div><div class="mb-l">CREDIT / UNIT</div><div class="mb-s">${R.ltcU} LIHTC units</div></div>
+        <div class="mb"><div class="mb-v">${fmt(R.debtU)}</div><div class="mb-l">DEBT / UNIT</div><div class="mb-s">${fmtN(v('intRate'),2)}% / ${vi('amortYrs')}yr</div></div>
+        <div class="mb"><div class="mb-v ${R.oer>0.55?'c-a':''}">${pct(R.oer)}</div><div class="mb-l">OP. EXP. RATIO</div><div class="mb-s">Typical 40–55%</div></div>
+        <div class="mb"><div class="mb-v">${fmt(R.devFeeTotal)}</div><div class="mb-l">DEV FEE</div><div class="mb-s">${pct(R.devFeeTotal/R.eligBasis)} of elig. basis</div></div>
+        <div class="mb"><div class="mb-v">${fmt(R.devFeeDeferred)}</div><div class="mb-l">DEFERRED FEE</div><div class="mb-s">${v('deferPct')}% of total</div></div>
+        <div class="mb"><div class="mb-v">${fmtN(v('constMos'),0)}mo</div><div class="mb-l">CONSTRUCTION</div><div class="mb-s">IDC: ${fmt(R.idcAmt)}</div></div>
+      </div>
+    </div>
+
+    <div class="rs"><div class="rs-hdr"><span class="rs-title">SENSITIVITY ANALYSIS</span></div>
+      <div class="sens-wrap">
+        <div class="sens-pane"><div class="sens-lbl">RENT SENSITIVITY — GAP IMPACT</div>
+          <table class="st"><thead><tr><th>RENT CHG</th><th>GAP/SURPLUS</th><th></th></tr></thead>
+          <tbody>${sRows}</tbody></table></div>
+        <div class="sens-pane"><div class="sens-lbl">CONSTRUCTION COST SENSITIVITY</div>
+          <table class="st"><thead><tr><th>COST/SF</th><th>GAP/SURPLUS</th><th></th></tr></thead>
+          <tbody>${cRows}</tbody></table></div>
+      </div>
+    </div>`;
+
+  // Re-attach market card data if we have it
+  if(locationData) renderMarketCard(locationData);
+}
+
+function recalc(){
+  updateUnitTotals();
+  renderResults(calculate());
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+renderUnits();
+recalc();
+document.addEventListener('input', e=>{
+  if(e.target.closest('.ut')) return;
+  recalc();
+});
+
+// Allow Enter key to trigger analysis
+document.getElementById('addrInput').addEventListener('keydown', e=>{
+  if(e.key==='Enter') runAnalysis();
+});
+</script>
+</body>
+</html>

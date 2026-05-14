@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LIHTC Tools — User Guide & FAQ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07111f;--surf:#0c1a2e;--panel:#0f2040;--border:#1a3356;--muted:#0d1e35;
+  --green:#10b981;--blue:#38bdf8;--amber:#f59e0b;--red:#f43f5e;--purple:#a78bfa;
+  --text:#dde8f5;--dim:#5e7a9c;--dimmer:#2d4a6a;
+}
+body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.6}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+.page-header{background:var(--surf);border-bottom:1px solid var(--border);padding:20px 40px;display:flex;align-items:center;gap:16px}
+.logo{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;letter-spacing:.07em}
+.logo span{color:var(--green)}
+.doc-title{font-size:14px;color:var(--dim);border-left:1px solid var(--border);padding-left:16px}
+.container{max-width:860px;margin:0 auto;padding:48px 32px}
+.intro{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:28px 32px;margin-bottom:40px}
+.intro h1{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:700;letter-spacing:.04em;margin-bottom:10px}
+.badge{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.1em;padding:3px 10px;border-radius:4px;margin-right:8px;margin-bottom:12px}
+.badge-green{background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);color:var(--green)}
+.badge-blue{background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.3);color:var(--blue)}
+.intro p{color:var(--dim);line-height:1.7;margin-bottom:12px}
+.intro p:last-child{margin-bottom:0}
+.section{margin-bottom:52px}
+.section-header{display:flex;align-items:center;gap:14px;margin-bottom:24px;padding-bottom:14px;border-bottom:2px solid var(--border)}
+.section-num{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;flex-shrink:0}
+.num-blue{background:rgba(56,189,248,.15);border:2px solid rgba(56,189,248,.4);color:var(--blue)}
+.num-green{background:rgba(16,185,129,.12);border:2px solid rgba(16,185,129,.35);color:var(--green)}
+.num-amber{background:rgba(245,158,11,.12);border:2px solid rgba(245,158,11,.35);color:var(--amber)}
+.section-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;letter-spacing:.04em}
+.section-subtitle{font-size:12px;color:var(--dim);margin-top:2px}
+.steps{display:flex;flex-direction:column;gap:14px}
+.step{background:var(--surf);border:1px solid var(--border);border-radius:10px;padding:18px 22px;display:flex;gap:18px}
+.step-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;margin-top:2px}
+.sn-blue{background:var(--blue);color:#000}
+.sn-green{background:var(--green);color:#000}
+.sn-amber{background:var(--amber);color:#000}
+.step-content{flex:1;min-width:0}
+.step-title{font-size:14px;font-weight:600;margin-bottom:6px}
+.step-body{font-size:13px;color:var(--dim);line-height:1.65}
+.step-body p{margin-bottom:8px}
+.step-body p:last-child{margin-bottom:0}
+.callout{background:var(--panel);border-left:3px solid var(--blue);border-radius:0 8px 8px 0;padding:12px 16px;margin:10px 0;font-size:12px;color:var(--dim);line-height:1.6}
+.callout.amber{border-left-color:var(--amber)}
+.callout.green{border-left-color:var(--green)}
+.callout.purple{border-left-color:var(--purple)}
+.callout strong{color:var(--text)}
+.col-table{width:100%;border-collapse:collapse;margin:12px 0;font-size:12px}
+.col-table th{text-align:left;padding:6px 10px;background:var(--panel);color:var(--dim);font-size:10px;letter-spacing:.07em;font-weight:700;border-bottom:1px solid var(--border)}
+.col-table td{padding:7px 10px;border-bottom:1px solid var(--muted);color:var(--dim);vertical-align:top}
+.col-table td:first-child{color:var(--text);font-family:'Fira Code',monospace;font-size:11px;white-space:nowrap}
+.col-table tr:last-child td{border-bottom:none}
+.metric-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:12px 0}
+.metric-card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:10px 12px;text-align:center}
+.mc-val{font-family:'Fira Code',monospace;font-size:15px;font-weight:600;margin-bottom:2px}
+.mc-val.green{color:var(--green)}
+.mc-val.amber{color:var(--amber)}
+.mc-val.red{color:var(--red)}
+.mc-val.blue{color:var(--blue)}
+.mc-lbl{font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--dimmer)}
+.faq{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.faq-item{background:var(--surf);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.faq-q{padding:14px 18px;font-size:13px;font-weight:600;color:var(--text)}
+.faq-a{padding:12px 18px 14px;font-size:12px;color:var(--dim);line-height:1.7;border-top:1px solid var(--muted)}
+.faq-a p{margin-bottom:8px}
+.faq-a p:last-child{margin-bottom:0}
+.tool-divider{display:flex;align-items:center;gap:16px;margin:52px 0 40px;color:var(--dimmer);font-size:11px;font-weight:700;letter-spacing:.12em}
+.tool-divider::before,.tool-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+footer{background:var(--surf);border-top:1px solid var(--border);padding:20px 40px;text-align:center;font-size:12px;color:var(--dimmer);margin-top:48px}
+@media(max-width:640px){.metric-row{grid-template-columns:1fr 1fr 1fr}.container{padding:24px 16px}.page-header{padding:16px 20px}}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="logo">LIHTC <span>TOOLS</span></div>
+  <div class="doc-title">User Guide &amp; FAQ</div>
+  <a href="index.html" style="margin-left:auto;padding:5px 13px;border-radius:6px;font-size:12px;font-weight:600;font-family:'Barlow',sans-serif;border:1px solid #1a3356;color:#5e7a9c;text-decoration:none">&#8592; Home</a>
+</div>
+
+<div class="container">
+
+  <!-- ═══════════════ TOOL 1: FEASIBILITY ═══════════════ -->
+
+  <div class="intro">
+    <div><span class="badge badge-blue">TOOL 1</span></div>
+    <h1>LIHTC Feasibility Underwriting Tool</h1>
+    <p>A browser-based 9% and 4% LIHTC deal underwriting tool. Runs entirely in your browser with no server, no login, and no API keys. Enter your address, import HUD income limits, run Claude Chat for comp research, and get a complete feasibility model with sources &amp; uses, debt sizing, tax credit equity, eligible basis, sensitivity analysis, and gap calculation.</p>
+    <p>Access: <a href="lihtc_feasibility.html">lihtc_feasibility.html</a></p>
+  </div>
+
+  <!-- SECTION 1: WORKFLOW -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num num-blue">1</div>
+      <div><div class="section-title">Workflow Overview</div><div class="section-subtitle">Four steps from address to completed feasibility model</div></div>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num sn-blue">1</div>
+        <div class="step-content">
+          <div class="step-title">Enter Address &amp; Click &#9889; Analyze</div>
+          <div class="step-body"><p>Type your project address — including state abbreviation and ZIP — and click <strong>&#9889; Analyze</strong>. The tool instantly applies RSMeans regional construction cost factors and operating expense benchmarks for your region, then opens the Claude Chat panel automatically.</p></div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num sn-blue">2</div>
+        <div class="step-content">
+          <div class="step-title">Import HUD MTSP Income Limits (Setup Tab)</div>
+          <div class="step-body">
+            <p>Go to the <strong>Setup tab</strong> and use the HUD MTSP import panel. Visit <a href="https://www.huduser.gov/portal/datasets/mtsp.html" target="_blank">huduser.gov &#8594; MTSP Income Limits &#8599;</a>, select your state and county, paste the results page text into the import box, and click <strong>&#10003; Parse &amp; Import</strong>.</p>
+            <p>Once imported, the LIHTC Gross Max column in the Units tab populates for all unit types at all AMI levels. Toggling AMI% on any row instantly updates gross max and net max — no re-import needed. If paste fails, enter the 4-Person AMI directly in the manual field.</p>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num sn-blue">3</div>
+        <div class="step-content">
+          <div class="step-title">Run Claude Chat for Market Research</div>
+          <div class="step-body"><p>Click <strong>Claude Chat</strong> in the top-right of the tool to open the research panel. Copy the pre-filled prompt and paste it into a new <a href="https://claude.ai" target="_blank">claude.ai</a> conversation. Claude searches the web for actual LIHTC comp rents, PHA utility allowances, construction costs, operating expense benchmarks, and soft financing sources for your market. Paste the JSON response back and click <strong>&#10003; Apply to Model</strong>. All fields populate automatically and are highlighted in blue. Soft source suggestions appear in the Financing tab as a reference panel — amounts are <em>not</em> auto-entered and must be confirmed manually.</p></div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num sn-blue">4</div>
+        <div class="step-content">
+          <div class="step-title">Review, Adjust &amp; Save</div>
+          <div class="step-body"><p>Every field is editable and the model recalculates in real time as you type. Check the five summary cards (DSCR, Loan to Cost, Gap, Annual Credit, OpEx/Unit) at the top of the results panel. Click <strong>&#128190; Save/Load</strong> in the header to name and save your analysis, load a prior version, or export/import JSON for sharing.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: SETUP TAB -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num num-blue">2</div>
+      <div><div class="section-title">Setup Tab</div><div class="section-subtitle">Income limits, deal type, building assumptions, credit parameters</div></div>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num sn-blue">A</div>
+        <div class="step-content">
+          <div class="step-title">HUD MTSP Income Limits Import</div>
+          <div class="step-body">
+            <p>Paste the HUD MTSP results page text and click <strong>&#10003; Parse &amp; Import</strong>. The tool extracts the 50% (Very Low Income) limit row, derives 60% at 1.20×, and computes LIHTC gross max rents for all unit types across all AMI levels (20–80%) using HUD's standard household size adjustment factors.</p>
+            <div class="callout amber"><strong>Tip:</strong> If the full page paste fails, try selecting just the income limits table on the HUD page. If it still fails, enter the 4-Person AMI directly in the manual field — the tool computes all limits from that single value.</div>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num sn-blue">B</div>
+        <div class="step-content">
+          <div class="step-title">Deal Type: 9% Competitive vs 4% Tax-Exempt Bond</div>
+          <div class="step-body">
+            <p><strong>9% deals:</strong> The 9% credit rate is used. Eligible basis × boost × 9% × 10 years × equity price = tax credit equity. First mortgage auto-sized from DSCR and LTV targets.</p>
+            <p><strong>4% deals:</strong> The credit rate is <strong>locked at 4.00%</strong> under TCJA 2017 §42(b)(3) — this is a fixed statutory rate, not the monthly AFR. Tax-exempt bonds are sized to satisfy the 25% aggregate basis test (CAA 2021): bonds target 30% of aggregate basis (land + hard costs + soft costs) and must equal at least 25%. A taxable first mortgage covers any remaining hard debt need. The 25% bond test result is shown in the Sources &amp; Uses panel.</p>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num sn-blue">C</div>
+        <div class="step-content">
+          <div class="step-title">QCT / DDA Basis Boost</div>
+          <div class="step-body"><p>Toggle the QCT/DDA switch to apply the 130% basis boost. Adjusted eligible basis is multiplied by 1.30 before calculating annual credit — a significant increase in credit equity. Use the <a href="lihtc_scanner.html">QCT/DDA Scanner</a> to verify your site's designation first.</p></div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num sn-blue">D</div>
+        <div class="step-content">
+          <div class="step-title">Building &amp; Site Assumptions</div>
+          <div class="step-body"><p>Enter GBA (gross building area SF), number of stories, and site acreage. The height cost premium is applied automatically: ≤3 stories = 1.00×, 4–6 stories = 1.14×, 7–12 stories = 1.32×, 13–20 stories = 1.50×. The suggested unit count is auto-derived from acreage × density (based on stories). Market-rate unit count (excluded from eligible basis) is entered here.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: UNITS TAB -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num num-blue">3</div>
+      <div><div class="section-title">Units Tab</div><div class="section-subtitle">Unit mix, LIHTC rent limits, utility allowances, proposed rents</div></div>
+    </div>
+    <p style="color:var(--dim);font-size:13px;margin-bottom:16px">Each row represents one unit type at one AMI level. All computed columns update instantly when AMI% or income limits change.</p>
+    <table class="col-table">
+      <thead><tr><th>COLUMN</th><th>WHAT IT MEANS</th><th>HOW IT'S SET</th></tr></thead>
+      <tbody>
+        <tr><td>TYPE</td><td>Studio, 1BR, 2BR, 3BR, or 4BR</td><td>Dropdown</td></tr>
+        <tr><td>UNITS</td><td>Number of units at this type/AMI combination</td><td>Manual entry</td></tr>
+        <tr><td>AMI%</td><td>Income targeting: 20%, 30%, 40%, 50%, 60%, 70%, 80%, or Market</td><td>Dropdown — updates Gross Max instantly</td></tr>
+        <tr><td>LIHTC GROSS MAX</td><td>HUD-published maximum gross rent before utility allowance, from your imported income limits at the selected AMI%</td><td>Auto from HUD import · read-only</td></tr>
+        <tr><td>NET MAX</td><td>Gross Max − UA = maximum contract rent legally chargeable. This is the LIHTC statutory ceiling.</td><td>Auto-computed · read-only</td></tr>
+        <tr><td>MAX ACHIEVABLE</td><td>Actual comp rent from comparable LIHTC properties in this market. Used for comparison only — does <em>not</em> reduce the proposed rent below Net Max.</td><td>Claude Chat or manual entry</td></tr>
+        <tr><td>PROPOSED RENT</td><td>Rent used in the income model (drives GPR). Always set to the Net Max (LIHTC statutory ceiling) regardless of comp rents — conservative market rents show as a discount percentage. Fully editable if you need to override.</td><td>Auto = Net Max · editable</td></tr>
+        <tr><td>DISC%</td><td>(1 − Proposed ÷ Market Rate) × 100. Shows affordability discount vs. unrestricted market rents. Color-coded: green ≥20%, amber 10–20%, red &lt;10%.</td><td>Auto-computed · read-only</td></tr>
+        <tr><td>ANN. GPR</td><td>Units × Proposed Rent × 12</td><td>Auto-computed · read-only</td></tr>
+      </tbody>
+    </table>
+    <div class="callout green" style="margin-top:14px"><strong>Utility Allowances:</strong> Enter monthly PHA schedule amounts for each unit size in the UA fields below the unit table. Claude Chat searches for the local PHA schedule and populates these if found. The Net Max column updates instantly when UA values change.</div>
+  </div>
+
+  <!-- SECTION 4: EXPENSES, COSTS, FINANCING -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num num-blue">4</div>
+      <div><div class="section-title">Expenses, Costs &amp; Financing Tabs</div><div class="section-subtitle">Operating pro forma, development budget, debt and equity structure</div></div>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num sn-blue">A</div>
+        <div class="step-content">
+          <div class="step-title">Expenses Tab</div>
+          <div class="step-body">
+            <p>All line items are annual per-unit amounts except management (% of EGI), payroll/benefits (total $ fields), and vacancy (% of GPR). Georgia DCA's QAP minimum is $5,500/unit/year for City of Atlanta projects and $4,500/unit/year for other MSAs — the tool displays a warning if your total falls below the applicable minimum.</p>
+            <p>Replacement reserve defaults to $250/unit/year (DCA minimum). Claude Chat populates all operating benchmarks from market comp data, highlighted in blue.</p>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num sn-blue">B</div>
+        <div class="step-content">
+          <div class="step-title">Costs Tab</div>
+          <div class="step-body">
+            <p><strong>Hard costs:</strong> Enter construction cost as $/unit (primary input) — $/SF is derived. The height premium is applied automatically. Site work, hard cost contingency %, and tap/impact fees are separate line items. FF&amp;E and soft cost contingency default to $800/unit and $1,500/unit respectively if left blank.</p>
+            <p><strong>Soft costs:</strong> Arch &amp; engineering, environmental, title, legal, market study, appraisal, accounting, LIHTC fees, lender inspection, builders risk, real estate taxes during construction, partnership organization, and other soft costs.</p>
+            <p><strong>Construction financing:</strong> Construction loan rate, construction period (months), and permanent loan origination fee % are all entered in the Costs tab. These drive construction interest and origination cost calculations in the Development Budget.</p>
+            <p><strong>Reserves &amp; developer fee:</strong> Operating reserve auto-calculates to 6 months GPR + 6 months OpEx (override available). Lease-up reserve defaults to $500/unit. Developer fee is % of eligible basis with a separate deferred % field.</p>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num sn-blue">C</div>
+        <div class="step-content">
+          <div class="step-title">Financing Tab</div>
+          <div class="step-body">
+            <p><strong>First mortgage sizing:</strong> The model always sizes the first mortgage to produce <em>exactly</em> the DSCR target (default 1.15×). The displayed "First Mtg DS" is therefore constant at NOI ÷ DSCR — it does not change when you adjust the interest rate or amortization. What <em>does</em> change with rate/amortization is the <strong>mortgage amount</strong>: lower rates and longer amortization allow a larger loan for the same debt service capacity. The Financing tab displays both the mortgage amount and total debt service with live updates.</p>
+            <p><strong>4% blended debt sizing:</strong> For 4% deals, the model solves algebraically for the first mortgage using the blended bond rate + taxable rate, ensuring the bond exactly hits the 30% aggregate basis target while the total first mortgage hits exactly 1.15× DSCR.</p>
+            <p><strong>Additional hard debt tranches:</strong> Mezzanine, second mortgages, USDA RD, or bridge loans can be added with rate, amortization, and P&amp;I or interest-only payment type. All hard debt service counts against DSCR and reduces first mortgage capacity.</p>
+            <p><strong>Soft sources:</strong> Each soft source has a payment type — Deferred/Accruing (no DSCR impact), Simple Interest Only (counts vs DSCR), P&amp;I Amortizing (counts vs DSCR), or Cash Flow/Residual Receipts (no DSCR impact). P&amp;I and IO soft sources are grouped with hard debt in the Sources &amp; Uses panel since they affect first mortgage sizing. All soft source amounts are included in Total Sources.</p>
+            <div class="callout purple"><strong>Soft Source Suggestions:</strong> When Claude Chat data is applied, a purple panel appears at the top of the Financing tab showing market-specific soft source recommendations (program name, type, suggested amount, notes). These are <em>display only</em> — enter amounts in the table below after reviewing.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 5: RESULTS PANEL -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num num-blue">5</div>
+      <div><div class="section-title">Results Panel</div><div class="section-subtitle">Reading the underwriting output</div></div>
+    </div>
+    <div class="metric-row">
+      <div class="metric-card"><div class="mc-val green">1.20×</div><div class="mc-lbl">DSCR</div></div>
+      <div class="metric-card"><div class="mc-val amber">72%</div><div class="mc-lbl">LOAN TO COST</div></div>
+      <div class="metric-card"><div class="mc-val red">−$1.2M</div><div class="mc-lbl">GAP</div></div>
+      <div class="metric-card"><div class="mc-val green">$1.15M</div><div class="mc-lbl">ANNUAL CREDIT</div></div>
+      <div class="metric-card"><div class="mc-val blue">$6,240</div><div class="mc-lbl">OPEX/UNIT/YR</div></div>
+    </div>
+    <div style="margin-top:16px;font-size:13px;color:var(--dim);line-height:1.8">
+      <p><strong style="color:var(--text)">DSCR</strong> — Net Operating Income ÷ Total Annual Debt Service. Target is 1.15×. Includes first mortgage + all additional hard debt + any P&amp;I or IO soft sources. The "Total DS" label in the Financing tab and the Income &amp; Expenses panel show this same all-in figure.</p>
+      <p><strong style="color:var(--text)">Loan to Cost</strong> — First mortgage ÷ Total Development Cost. Informational only — the model sizes to DSCR first. Max LTV in the Financing tab is a cap, not a target.</p>
+      <p><strong style="color:var(--text)">Gap / Surplus</strong> — TDC minus total sources (hard debt + equity + all soft source principal + deferred fee). A <strong>gap</strong> shows as a negative number (−$X, red) — money still needed to close the deal. A <strong>surplus</strong> shows as a positive number (+$X, green). Deal must reach $0 to be financeable.</p>
+      <p><strong style="color:var(--text)">Annual Credit</strong> — Eligible basis × basis boost × credit rate × 10 years × equity price. For 4% deals the credit rate is locked at 4.00%. Override available if you have an HFA allocation letter.</p>
+      <p><strong style="color:var(--text)">OpEx / Unit / Year</strong> — Total operating expenses ÷ total units. Benchmark: $5,500–$8,000/unit for Georgia LIHTC projects depending on market and building type.</p>
+    </div>
+    <div class="callout" style="margin-top:16px"><strong>Sources &amp; Uses structure:</strong> Hard debt (first mortgage + addl tranches + any P&amp;I/IO soft loans) is grouped at the top with a Total Debt Service row. LIHTC equity follows. Deferred grants and cash flow soft sources appear below equity. Deferred developer fee is last. All amounts in both sections add to Total Sources.</div>
+    <div class="callout green" style="margin-top:8px"><strong>📋 Summary / Print:</strong> Click the Summary button (top-right of results panel) to generate a one-page GO / CONDITIONAL GO / NO-GO investment summary with key metrics, capital stack, and narrative. Use the Claude Chat integration inside the summary to auto-generate the narrative text. Print or export as PDF from the summary modal.</div>
+  </div>
+
+  <!-- SECTION 6: SAVE / EXPORT -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num num-blue">6</div>
+      <div><div class="section-title">Save, Load &amp; Export</div><div class="section-subtitle">Persisting and sharing your work</div></div>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num sn-blue">A</div>
+        <div class="step-content">
+          <div class="step-title">Auto-Save</div>
+          <div class="step-body"><p>The tool automatically saves your work to browser localStorage every 2 seconds. Your model is restored automatically when you reopen the page in the same browser — no action required.</p></div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num sn-blue">B</div>
+        <div class="step-content">
+          <div class="step-title">Named Saves</div>
+          <div class="step-body"><p>Click <strong>&#128190; Save/Load</strong> in the page header, enter a project name, and click <strong>Save</strong>. Up to 20 named saves are stored in your browser. Load any prior save to restore all fields, unit mix, soft sources, and financing assumptions.</p></div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num sn-blue">C</div>
+        <div class="step-content">
+          <div class="step-title">Export / Import JSON</div>
+          <div class="step-body"><p>Use <strong>Export JSON</strong> to download a portable file of your complete model state. Share it via email or Teams and the recipient can use <strong>Import JSON</strong> to load the exact same model in their browser. This is the recommended method for sharing analyses across team members.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 7: FAQ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num num-amber">?</div>
+      <div><div class="section-title">Feasibility Tool — FAQ</div></div>
+    </div>
+    <div class="faq">
+
+      <div class="faq-item">
+        <div class="faq-q">Why doesn't debt service change when I adjust the interest rate or amortization?</div>
+        <div class="faq-a"><p>The model always sizes the first mortgage so that debt service equals exactly NOI ÷ DSCR target. Since the DSCR target and NOI are fixed, the debt service is mathematically constant regardless of rate or amortization. What changes is the <strong>mortgage amount</strong> — a lower rate or longer term lets you borrow more for the same annual payment. This is correct LIHTC underwriting behavior: you're always maximizing debt within the DSCR constraint.</p></div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">How is the 4% tax-exempt bond sized?</div>
+        <div class="faq-a"><p>The model solves algebraically for the first mortgage using a blended rate approach. The tax-exempt bond targets 30% of aggregate basis (land + hard costs + soft costs) to satisfy the 25% bond test under CAA 2021. If 30% of aggregate basis exceeds what 1.15× DSCR can support, the bond is reduced accordingly. A taxable first mortgage fills the gap between the bond and the total hard debt need. The model always sizes the total first mortgage (bond + taxable) to exactly hit the 1.15× DSCR target using the blended mortgage constant.</p></div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">What is the 4% credit rate?</div>
+        <div class="faq-a"><p>The 4% credit rate is <strong>fixed at 4.00%</strong> by statute under the Tax Cuts and Jobs Act of 2017 (TCJA §42(b)(3)). This applies to all projects financed with tax-exempt bonds under §142. It is not the monthly IRS Applicable Federal Rate (AFR) — 4% deals use 4.00% regardless of prevailing interest rates.</p></div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">Why does the proposed rent always equal the Net Max?</div>
+        <div class="faq-a"><p>The model defaults proposed rents to the LIHTC statutory ceiling (Net Max = Gross Max − UA) regardless of comp rents. This maximizes modeled income and shows the deal's full upside. The Max Achievable column shows what comparable properties actually charge — if that's below Net Max, the DISC% column and the affordability discount percentage tell you the underwriting risk. You can manually override any proposed rent if you want to model conservative comp-based rents.</p></div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">How do P&amp;I soft sources affect the first mortgage?</div>
+        <div class="faq-a"><p>Soft sources with P&amp;I or Interest Only payment types count against DSCR just like hard debt. Their annual debt service is subtracted from NOI ÷ DSCR before sizing the first mortgage — so adding a $10M P&amp;I soft loan reduces the first mortgage by approximately the same debt service capacity. Total DS (first mortgage + soft P&amp;I DS) stays constant at NOI ÷ DSCR. The Sources &amp; Uses panel groups P&amp;I/IO soft sources with hard debt and shows the combined Total Debt Service row.</p></div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">What's the difference between Eligible Basis and Aggregate Basis?</div>
+        <div class="faq-a">
+          <p><strong>Eligible Basis</strong> — hard construction costs + qualified soft costs (A&amp;E, non-lender soft costs) + developer fee applied to those costs. Excludes land, permanent financing costs, non-qualifying costs, and lender-required costs. Multiplied by the basis boost (130% if QCT/DDA) to get Adjusted Eligible Basis, then multiplied by the credit rate × 10 years × equity price for LIHTC equity.</p>
+          <p><strong>Aggregate Basis</strong> — all hard costs + all soft costs + land. Used only for the 4% bond test: tax-exempt bonds must equal ≥25% of aggregate basis (the tool targets 30%).</p>
+          <p><strong>Total Development Cost (TDC)</strong> — everything: land, hard costs, all soft costs, financing costs, developer fee, operating reserve, lease-up reserve. Used for the gap calculation (TDC − all sources).</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">What does Claude Chat actually research?</div>
+        <div class="faq-a"><p>Claude searches the web for: (1) actual LIHTC comp rents at comparable Section 42 properties in your market; (2) local PHA utility allowance schedules; (3) LIHTC operating expense benchmarks from state HFA publications; (4) construction cost data from HFA award applications and RSMeans regional factors; (5) recommended unit mix and total unit count for the submarket; (6) soft financing sources with program-specific suggested amounts based on recent awardees. All fields populate automatically with blue highlights. The soft source panel shows researched programs with suggested amounts — these are not auto-entered and require your review before adding to the Financing tab.</p></div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">Why does the LIHTC Gross Max show dashes before I import HUD data?</div>
+        <div class="faq-a"><p>The tool requires actual HUD MTSP income limits for your specific market — state-level averages are too inaccurate for high-AMI metros. Import via the Setup tab or enter the 4-Person AMI manually to populate all Gross Max columns.</p></div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">How do I model a cash flow residual receipts soft loan?</div>
+        <div class="faq-a"><p>In the Financing tab, add your soft source and set the payment type to <strong>Cash Flow / Residual Receipts</strong>. The model treats this as $0 annual debt service for DSCR purposes — standard HFA underwriting treatment. The full principal counts toward Total Sources in the S&amp;U.</p></div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">Can I share my analysis with a colleague?</div>
+        <div class="faq-a"><p>Yes. Click <strong>&#128190; Save/Load</strong> in the page header and choose <strong>Export JSON</strong> to download a portable file. Email it to your colleague; they click <strong>Import JSON</strong> to load the exact same model in their browser. Named saves are browser-local only — JSON export is the correct method for sharing.</p></div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ═══════════════ TOOL 2: QCT/DDA SCANNER ═══════════════ -->
+
+  <div class="tool-divider">TOOL 2 &mdash; QCT &amp; DDA SCANNER</div>
+
+  <div class="intro">
+    <div><span class="badge badge-blue">TOOL 2</span></div>
+    <h1>QCT &amp; DDA Scanner</h1>
+    <p>Batch-check whether LIHTC sites qualify as Qualified Census Tracts (QCT) or Difficult Development Areas (DDA) under HUD's FY2026 designations. Accepts a CSV of addresses or lat/lon coordinates, geocodes via the US Census Bureau API, and queries HUD's live ArcGIS designation services. Results export to CSV. Crexi export format is directly supported.</p>
+    <p>Access: <a href="lihtc_scanner.html">lihtc_scanner.html</a></p>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num num-green">1</div>
+      <div><div class="section-title">How the Scanner Works</div><div class="section-subtitle">Data sources and lookup methodology</div></div>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num sn-green">1</div>
+        <div class="step-content">
+          <div class="step-title">Geocoding (Address Mode)</div>
+          <div class="step-body"><p>Each address is geocoded via the <strong>US Census Bureau Geocoder API</strong> — free, US-only, returns latitude/longitude and census tract GEOID. The GEOID is used for QCT tract matching; lat/lon is used for the DDA spatial query.</p></div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num sn-green">2</div>
+        <div class="step-content">
+          <div class="step-title">QCT Lookup</div>
+          <div class="step-body"><p>In address mode, the scanner pre-loads all FY2026 QCT census tract GEOIDs from HUD's ArcGIS service in a single batch call (~2,400 tracts nationally), then checks each geocoded site against the set. In coordinate mode (lat/lon in CSV), it queries the HUD ArcGIS spatial service directly per point.</p></div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num sn-green">3</div>
+        <div class="step-content">
+          <div class="step-title">DDA Lookup</div>
+          <div class="step-body"><p>A live spatial query to HUD's FY2026 DDA ArcGIS service checks whether each site's lat/lon falls within a designated DDA polygon. This uses HUD's official published boundaries.</p></div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num sn-green">4</div>
+        <div class="step-content">
+          <div class="step-title">Results &amp; Export</div>
+          <div class="step-body"><p>Results show QCT status, DDA status, census tract GEOID, and geocoded address for each site. Click <strong>&#8595; Export CSV</strong> to download — your original columns plus QCT, DDA (Live), GEOID, and Geocoded Address appended. Filter by designation in Excel to identify your QCT/DDA opportunities.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num num-green">2</div>
+      <div><div class="section-title">Step-by-Step Usage</div><div class="section-subtitle">From CSV upload to exported results</div></div>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num sn-green">1</div>
+        <div class="step-content">
+          <div class="step-title">Prepare Your CSV</div>
+          <div class="step-body">
+            <p>The scanner accepts any CSV with either: (A) address columns — street address, city, state, ZIP; or (B) coordinate columns — latitude and longitude. A name/label column is recommended.</p>
+            <p>Crexi export CSVs are directly supported — the scanner skips Crexi's junk header rows and auto-detects the format.</p>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num sn-green">2</div>
+        <div class="step-content">
+          <div class="step-title">Upload &amp; Map Columns</div>
+          <div class="step-body"><p>Drag and drop your CSV onto the drop zone or click to browse. The column mapping panel auto-detects likely matches by column name. Confirm the assignments and click <strong>&#9658; Run Scan</strong>.</p></div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num sn-green">3</div>
+        <div class="step-content">
+          <div class="step-title">Monitor Progress</div>
+          <div class="step-body"><p>In address mode, the scanner first loads all QCT tracts, then processes each address sequentially with a progress bar and ETA. Failed geocodes appear as "Unknown" in a warnings panel — common causes include non-standard address formats or addresses outside the Census geocoder's coverage.</p></div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num sn-green">4</div>
+        <div class="step-content">
+          <div class="step-title">Export Results</div>
+          <div class="step-body"><p>Click <strong>&#8595; Export CSV</strong> when the scan completes. The file includes all original columns plus: <code>QCT</code> (Yes/No/Unknown), <code>DDA (Live)</code> (Yes/No/Unknown), <code>GEOID</code> (11-digit census tract ID), and <code>Geocoded Address</code>. Click <strong>New Scan</strong> to start over.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num num-amber">?</div>
+      <div><div class="section-title">Scanner — FAQ</div></div>
+    </div>
+    <div class="faq">
+
+      <div class="faq-item">
+        <div class="faq-q">What year's QCT and DDA designations does the scanner use?</div>
+        <div class="faq-a"><p>The scanner uses <strong>HUD FY2026 designations</strong> loaded directly from HUD's live ArcGIS services — the current designations applicable to projects placed in service in 2026. Because the tool queries the live service rather than cached data, it reflects any updates HUD makes during the year.</p></div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">Some sites are showing "Unknown" — what does that mean?</div>
+        <div class="faq-a">
+          <p><strong>Unknown for QCT</strong> — the Census geocoder could not resolve the address to a census tract GEOID. Common causes: non-standard address format, very new construction not yet in the Census database, or a rural address with limited geocoder coverage.</p>
+          <p><strong>Unknown for DDA</strong> — the spatial query to HUD's ArcGIS service failed, usually a temporary network issue. Run the scan again or check your connection.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">How fast does the scanner process addresses?</div>
+        <div class="faq-a"><p>Approximately 2–4 seconds per address, processed sequentially to respect rate limits. A list of 50 addresses typically completes in 2–3 minutes. For large lists (500+ addresses), break the CSV into smaller batches.</p></div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">The scanner is stuck loading QCT tracts. What should I do?</div>
+        <div class="faq-a"><p>QCT loading requires access to HUD's ArcGIS services at <code>services.arcgis.com</code>. Try: (1) Refresh the page and run again. (2) Check that your network or firewall isn't blocking the ArcGIS domain. (3) Switch to coordinate mode — if your CSV has lat/lon columns, the scanner queries ArcGIS per-point rather than pre-loading all tracts, which may work better on restricted networks.</p></div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">Does the scanner work with Crexi exports?</div>
+        <div class="faq-a"><p>Yes. Crexi's CSV export includes 1–2 junk rows before the actual column headers. The scanner detects and skips these automatically, then reads address, city, state, and name columns. Drop the Crexi export directly onto the drop zone.</p></div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">Is the scanner's QCT/DDA data reliable enough for HFA applications?</div>
+        <div class="faq-a"><p>The scanner pulls from HUD's official published ArcGIS services — the same underlying data HUD uses. That said, always verify through your state HFA's QAP and the official HUD income limits page before submitting an application. For sites near tract boundaries, a small geocoding offset can change the result — use the GEOID from the export to manually verify the tract at huduser.gov.</p></div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">Can I scan a single address without a CSV?</div>
+        <div class="faq-a"><p>The scanner is CSV-based. For a single address, create a one-row CSV (Name, Address, City, State) and upload it. Alternatively, use the LIHTC Feasibility Tool — the QCT/DDA toggle on the Setup tab lets you model the basis boost; verify the designation using the GEOID from a manual Census geocoder lookup.</p></div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  LIHTC Tools &nbsp;&#183;&nbsp; <a href="index.html">Return to Hub</a> &nbsp;&#183;&nbsp; Data: HUD USER, US Census Bureau, HUD ArcGIS
+</footer>
+
+</body>
+</html>

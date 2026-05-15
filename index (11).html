@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LIHTC Tools — Affordable Housing Analytics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;1,300&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f4f2ed;
+  --ink:#0d0d0b;
+  --mid:#5a5a52;
+  --faint:#c8c5bc;
+  --rule:#0d0d0b;
+  --green:#00b870;
+  --green-pale:#e6f7f0;
+  --amber:#d4841a;
+  --blue:#1a4fd4;
+  --white:#ffffff;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:'IBM Plex Sans',sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+
+/* ── NAV ──────────────────────────────────────── */
+nav{
+  border-bottom:3px solid var(--ink);
+  padding:0 48px;
+  display:flex;
+  align-items:stretch;
+  background:var(--white);
+  height:56px;
+}
+.nav-logo{
+  font-family:'Oswald',sans-serif;
+  font-size:17px;
+  font-weight:700;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  display:flex;align-items:center;
+  border-right:2px solid var(--ink);
+  padding-right:32px;
+  margin-right:32px;
+  color:var(--ink);
+  gap:10px;
+}
+.nav-logo-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--green);
+  flex-shrink:0;
+}
+.nav-links{
+  display:flex;align-items:center;gap:0;flex:1;
+}
+.nav-link{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;font-weight:500;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--mid);
+  text-decoration:none;
+  padding:0 20px;
+  height:100%;
+  display:flex;align-items:center;
+  border-right:1px solid var(--faint);
+  transition:color .15s,background .15s;
+}
+.nav-link:hover{color:var(--ink);background:var(--green-pale)}
+.nav-tag{
+  margin-left:auto;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  font-weight:500;
+  letter-spacing:.08em;
+  color:var(--green);
+  background:var(--green-pale);
+  border:1.5px solid var(--green);
+  padding:4px 14px;
+  display:flex;align-items:center;
+  align-self:center;
+}
+
+/* ── HERO ─────────────────────────────────────── */
+.hero{
+  border-bottom:2px solid var(--ink);
+  padding:0;
+  display:grid;
+  grid-template-columns:1fr 260px;
+  align-items:stretch;
+  min-height:420px;
+  position:relative;
+  overflow:hidden;
+  background:var(--white);
+}
+.hero-photo{
+  position:absolute;inset:0;z-index:0;
+}
+.hero-photo img{
+  width:100%;height:100%;
+  object-fit:cover;object-position:center 40%;
+  display:block;
+  filter:grayscale(50%) contrast(1.08) brightness(1.06) saturate(.8);
+}
+.hero-photo::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(
+    to right,
+    rgba(244,242,237,1)   0%,
+    rgba(244,242,237,.97) 28%,
+    rgba(244,242,237,.8)  55%,
+    rgba(244,242,237,.28) 82%,
+    rgba(244,242,237,.05) 100%
+  );
+}
+.hero-text{
+  padding:56px 48px 48px;
+  display:flex;flex-direction:column;justify-content:flex-end;
+  position:relative;z-index:1;
+}
+.hero-stats-col{
+  padding:36px 32px;
+  display:flex;flex-direction:column;justify-content:center;
+  position:relative;z-index:1;
+  border-left:1px solid rgba(13,13,11,.12);
+  background:rgba(244,242,237,.72);
+  backdrop-filter:blur(3px);
+}
+
+.hero-kicker{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;font-weight:500;
+  letter-spacing:.2em;text-transform:uppercase;
+  color:var(--mid);
+  margin-bottom:20px;
+  display:flex;align-items:center;gap:12px;
+}
+.hero-kicker::before{
+  content:'';display:block;
+  width:24px;height:2px;
+  background:var(--green);
+}
+h1{
+  font-family:'Oswald',sans-serif;
+  font-size:clamp(60px,6.5vw,92px);
+  font-weight:700;
+  line-height:.97;
+  letter-spacing:-.01em;
+  text-transform:uppercase;
+  color:var(--ink);
+  margin-bottom:28px;
+}
+h1 span{color:var(--green)}
+.hero-body{
+  font-size:15px;font-weight:300;
+  line-height:1.8;color:var(--mid);
+  max-width:480px;
+}
+.hero-body strong{color:var(--ink);font-weight:500}
+.hero-stats{
+  display:flex;flex-direction:column;gap:28px;
+}
+.stat-block{}
+.stat-num{
+  font-family:'Oswald',sans-serif;
+  font-size:44px;font-weight:700;
+  line-height:1;
+  color:var(--ink);
+  letter-spacing:-.02em;
+}
+.stat-num sup{font-size:22px;vertical-align:super}
+.stat-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9px;font-weight:500;
+  letter-spacing:.14em;text-transform:uppercase;
+  color:var(--mid);
+  margin-top:4px;
+}
+.stat-div{width:100%;height:1px;background:var(--faint)}
+
+/* ── PILL STRIP ───────────────────────────────── */
+.pill-strip{
+  border-bottom:1px solid var(--faint);
+  background:var(--bg);
+  padding:14px 48px;
+  display:flex;gap:10px;flex-wrap:wrap;
+  align-items:center;
+}
+.ps-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9px;font-weight:500;
+  letter-spacing:.18em;text-transform:uppercase;
+  color:var(--faint);
+  margin-right:6px;
+}
+.ps-tag{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;font-weight:400;
+  letter-spacing:.05em;
+  padding:4px 12px;
+  border:1.5px solid var(--faint);
+  color:var(--mid);
+  background:transparent;
+}
+
+
+/* ── MAIN GRID ────────────────────────────────── */
+.main-grid{
+  flex:1;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  grid-template-rows:auto auto;
+  border-bottom:2px solid var(--ink);
+}
+
+/* ── TOOL BLOCK ───────────────────────────────── */
+.tool{
+  display:flex;flex-direction:column;
+  text-decoration:none;color:inherit;
+  transition:background .2s;
+  position:relative;
+  border-right:2px solid var(--ink);
+}
+.tool:last-child{border-right:none}
+.tool:hover{background:var(--ink);color:var(--white)}
+.tool:hover .tool-num,
+.tool:hover .tool-body,
+.tool:hover .tool-title,
+.tool:hover .tool-desc,
+.tool:hover .chip-dm{color:rgba(255,255,255,.5)}
+.tool:hover .tool-title{color:var(--white)}
+.tool:hover .chip-em{background:rgba(0,184,112,.2);color:#5dffa8;border-color:rgba(0,184,112,.4)}
+.tool:hover .chip-el{background:rgba(56,200,255,.15);color:#7ee8ff;border-color:rgba(56,200,255,.35)}
+.tool:hover .chip-go{background:rgba(212,132,26,.15);color:#ffd080;border-color:rgba(212,132,26,.3)}
+.tool:hover .tool-icon{filter:none}
+.tool:hover .tool-cta{border-color:rgba(255,255,255,.3);color:rgba(255,255,255,.7)}
+.tool:hover .tool-cta-text{color:var(--white)}
+
+.tool-header{
+  padding:32px 36px 24px;
+  border-bottom:1px solid;
+  border-color:inherit;
+  display:flex;align-items:flex-start;gap:24px;
+}
+.tool-num{
+  font-family:'Oswald',sans-serif;
+  font-size:72px;font-weight:700;
+  line-height:.85;
+  color:var(--faint);
+  letter-spacing:-.04em;
+  flex-shrink:0;
+  transition:color .2s;
+}
+.tool:hover .tool-num{color:rgba(255,255,255,.12)}
+.tool-head-right{flex:1}
+.tool-eyebrow{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9px;font-weight:500;
+  letter-spacing:.2em;text-transform:uppercase;
+  margin-bottom:10px;
+  transition:color .2s;
+}
+.tool-title{
+  font-family:'Oswald',sans-serif;
+  font-size:28px;font-weight:600;
+  line-height:1.1;
+  letter-spacing:.01em;
+  text-transform:uppercase;
+  transition:color .2s;
+}
+.tool-body{
+  padding:28px 36px;
+  flex:1;
+  display:flex;flex-direction:column;gap:20px;
+  transition:color .2s;
+}
+.tool-icon{
+  display:flex;
+  justify-content:flex-start;
+  transition:filter .2s;
+}
+.tool-desc{
+  font-size:13px;font-weight:300;
+  line-height:1.8;color:var(--mid);
+  transition:color .2s;
+}
+.chips{display:flex;gap:5px;flex-wrap:wrap}
+.chip{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9px;
+  padding:3px 10px;
+  border:1.5px solid;
+  letter-spacing:.04em;
+  transition:background .2s,color .2s,border-color .2s;
+}
+.chip-em{border-color:rgba(0,184,112,.35);color:var(--green);background:var(--green-pale)}
+.chip-el{border-color:rgba(26,79,212,.2);color:var(--blue);background:rgba(26,79,212,.05)}
+.chip-go{border-color:rgba(212,132,26,.25);color:var(--amber);background:rgba(212,132,26,.06)}
+.chip-dm{border-color:var(--faint);color:var(--mid);background:transparent}
+
+.tool-footer{
+  margin-top:auto;
+  padding:18px 36px;
+  border-top:1px solid;
+  border-color:var(--faint);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.tool:hover .tool-footer{border-color:rgba(255,255,255,.12)}
+.tool-cta-text{
+  font-family:'Oswald',sans-serif;
+  font-size:14px;font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;
+  transition:color .2s;
+}
+.tool-cta{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px;
+  padding:6px 14px;
+  border:1.5px solid var(--faint);
+  color:var(--mid);
+  transition:border-color .2s,color .2s;
+}
+
+/* ── GUIDE STRIP ──────────────────────────────── */
+.guide-strip{
+  grid-column:1/-1;
+  border-top:1px solid var(--faint);
+  display:flex;
+  align-items:center;
+  padding:0 48px;
+  height:52px;
+  background:var(--bg);
+  gap:24px;
+}
+.guide-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9px;font-weight:500;
+  letter-spacing:.2em;text-transform:uppercase;
+  color:var(--faint);
+}
+.guide-link{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  color:var(--mid);
+  text-decoration:none;
+  display:flex;align-items:center;gap:8px;
+  transition:color .2s;
+}
+.guide-link:hover{color:var(--ink)}
+.guide-arr{
+  font-size:14px;
+  display:inline-block;
+  transition:transform .2s;
+}
+.guide-link:hover .guide-arr{transform:translateX(3px)}
+
+/* ── DATA BAR ─────────────────────────────────── */
+.data-bar{
+  background:var(--ink);
+  color:rgba(255,255,255,.35);
+  padding:16px 48px;
+  display:flex;align-items:center;gap:28px;flex-wrap:wrap;
+}
+.db-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9px;font-weight:500;
+  letter-spacing:.2em;text-transform:uppercase;
+  color:rgba(255,255,255,.2);
+  white-space:nowrap;
+}
+.db-sources{display:flex;gap:20px;flex-wrap:wrap}
+.db-src{
+  display:flex;align-items:center;gap:7px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+}
+.db-pip{width:4px;height:4px;border-radius:50%;flex-shrink:0}
+
+/* ── FOOTER ───────────────────────────────────── */
+footer{
+  background:var(--ink);
+  border-top:1px solid rgba(255,255,255,.08);
+  padding:14px 48px;
+  display:flex;align-items:center;justify-content:space-between;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9px;
+  letter-spacing:.06em;
+  color:rgba(255,255,255,.2);
+}
+
+/* ── RESPONSIVE ───────────────────────────────── */
+@media(max-width:768px){
+  nav{padding:0 20px}
+  .hero{grid-template-columns:1fr;min-height:380px}
+  .hero-text{padding:36px 20px 36px}
+  .hero-stats-col{display:none}
+  .hero-photo::after{background:linear-gradient(to bottom,rgba(244,242,237,.97) 0%,rgba(244,242,237,.85) 70%,rgba(244,242,237,.5) 100%)}
+  .pill-strip{padding:12px 20px}
+  .main-grid{grid-template-columns:1fr}
+  .tool{border-right:none;border-bottom:2px solid var(--ink)}
+  .guide-strip{padding:0 20px}
+  .data-bar{padding:14px 20px}
+  footer{padding:12px 20px;flex-direction:column;gap:4px;text-align:center}
+}
+</style>
+</head>
+<body>
+
+<!-- ── NAV ────────────────────────────────────────── -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-dot"></div>
+    LIHTC Tools
+  </div>
+  <div class="nav-links">
+    <a href="lihtc_scanner.html" class="nav-link">QCT / DDA</a>
+    <a href="lihtc_feasibility.html" class="nav-link">Feasibility</a>
+    <a href="setup_guide.html" class="nav-link">Guide</a>
+  </div>
+  <div class="nav-tag">FY 2026 DATA</div>
+</nav>
+
+<!-- ── HERO ───────────────────────────────────────── -->
+<div class="hero">
+  <div class="hero-photo">
+    <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1400&q=85&auto=format&fit=crop" alt="Modern multifamily apartment building">
+  </div>
+  <div class="hero-text">
+    <div class="hero-kicker">Affordable Housing Development Analytics</div>
+    <h1>Make deals<br>pencil.<br><span>Faster.</span></h1>
+    <p class="hero-body">Browser-based LIHTC underwriting tools for developers and analysts. Live HUD FY&thinsp;2026 data, RSMeans regional cost factors, and Claude AI market research.</p>
+  </div>
+  <div class="hero-stats-col">
+    <div class="hero-stats">
+      <div class="stat-block">
+        <div class="stat-num">9<span style="font-size:28px;font-weight:400">%</span> &amp; 4<span style="font-size:28px;font-weight:400">%</span></div>
+        <div class="stat-label">Deal Types Covered</div>
+      </div>
+      <div class="stat-div"></div>
+      <div class="stat-block">
+        <div class="stat-num">FY26</div>
+        <div class="stat-label">HUD MTSP Limits</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CAPABILITY STRIP ────────────────────────────── -->
+<div class="pill-strip">
+  <span class="ps-label">Includes</span>
+  <span class="ps-tag">9% Competitive</span>
+  <span class="ps-tag">4% Tax-Exempt Bond</span>
+  <span class="ps-tag">HUD FY2026 Limits</span>
+  <span class="ps-tag">QCT / DDA Batch Screen</span>
+  <span class="ps-tag">Claude Chat Comps</span>
+  <span class="ps-tag">Save &amp; Export</span>
+</div>
+
+<!-- ── MAIN TOOLS ──────────────────────────────────── -->
+<div class="main-grid">
+
+  <!-- QCT / DDA SCANNER -->
+  <a href="lihtc_scanner.html" class="tool">
+    <div class="tool-header">
+      <div class="tool-num">01</div>
+      <div class="tool-head-right">
+        <div class="tool-eyebrow" style="color:var(--blue)">Screening Tool</div>
+        <div class="tool-title">QCT / DDA<br>Scanner</div>
+      </div>
+    </div>
+    <div class="tool-body">
+      <div class="tool-icon">
+        <!-- Radar / batch scan SVG -->
+        <svg width="80" height="72" viewBox="0 0 80 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="36" cy="38" r="30" stroke="rgba(26,79,212,.12)" stroke-width="1"/>
+          <circle cx="36" cy="38" r="20" stroke="rgba(26,79,212,.18)" stroke-width="1"/>
+          <circle cx="36" cy="38" r="10" stroke="rgba(26,79,212,.28)" stroke-width="1"/>
+          <line x1="36" y1="8" x2="36" y2="68" stroke="rgba(26,79,212,.1)" stroke-width=".8"/>
+          <line x1="6" y1="38" x2="66" y2="38" stroke="rgba(26,79,212,.1)" stroke-width=".8"/>
+          <path d="M36 38 L36 9 A29 29 0 0 1 62 52 Z" fill="rgba(26,79,212,.06)"/>
+          <line x1="36" y1="38" x2="36" y2="9" stroke="rgba(26,79,212,.5)" stroke-width="1.2"/>
+          <line x1="36" y1="38" x2="62" y2="52" stroke="rgba(26,79,212,.5)" stroke-width="1.2"/>
+          <circle cx="28" cy="22" r="3" fill="var(--green)" opacity=".9"/>
+          <circle cx="50" cy="30" r="3" fill="var(--green)" opacity=".8"/>
+          <circle cx="54" cy="46" r="3" fill="var(--amber)" opacity=".85"/>
+          <circle cx="18" cy="46" r="2.5" fill="rgba(0,0,0,.2)"/>
+          <circle cx="38" cy="56" r="2.5" fill="rgba(0,0,0,.2)"/>
+          <circle cx="36" cy="38" r="3" fill="rgba(26,79,212,.8)"/>
+          <circle cx="36" cy="38" r="1.5" fill="white"/>
+        </svg>
+      </div>
+      <div class="tool-desc">
+        Batch-screen a portfolio of addresses against HUD FY2026 Qualified Census Tract and Difficult Development Area designations. Crexi CSV exports supported natively. Live ArcGIS polygon queries&mdash;no manual HUD map lookups required.
+      </div>
+      <div class="chips">
+        <span class="chip chip-el">2026 QCT</span>
+        <span class="chip chip-el">2026 DDA</span>
+        <span class="chip chip-dm">Batch Processing</span>
+        <span class="chip chip-dm">Crexi CSV</span>
+        <span class="chip chip-dm">Export</span>
+      </div>
+    </div>
+    <div class="tool-footer">
+      <span class="tool-cta-text">Open Scanner</span>
+      <span class="tool-cta">Launch &rarr;</span>
+    </div>
+  </a>
+
+  <!-- FEASIBILITY TOOL -->
+  <a href="lihtc_feasibility.html" class="tool" style="border-right:none">
+    <div class="tool-header">
+      <div class="tool-num">02</div>
+      <div class="tool-head-right">
+        <div class="tool-eyebrow" style="color:var(--green)">Primary Tool</div>
+        <div class="tool-title">Feasibility<br>Underwriting</div>
+      </div>
+    </div>
+    <div class="tool-body">
+      <div class="tool-icon">
+        <!-- Capital stack / pro-forma SVG -->
+        <svg width="80" height="72" viewBox="0 0 80 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0" y="28" width="16" height="40" fill="rgba(26,79,212,.15)" stroke="rgba(26,79,212,.5)" stroke-width="1.2"/>
+          <rect x="20" y="12" width="16" height="56" fill="rgba(0,184,112,.15)" stroke="rgba(0,184,112,.55)" stroke-width="1.2"/>
+          <rect x="40" y="20" width="16" height="48" fill="rgba(212,132,26,.12)" stroke="rgba(212,132,26,.45)" stroke-width="1.2"/>
+          <rect x="60" y="44" width="16" height="24" fill="rgba(180,60,90,.12)" stroke="rgba(180,60,90,.4)" stroke-width="1.2"/>
+          <line x1="0" y1="36" x2="76" y2="36" stroke="rgba(0,184,112,.7)" stroke-width="1.2" stroke-dasharray="4 3"/>
+          <circle cx="0" cy="36" r="2.5" fill="var(--green)"/>
+          <rect x="0" y="68" width="76" height="1" fill="rgba(0,0,0,.12)"/>
+        </svg>
+      </div>
+      <div class="tool-desc">
+        Full 9% and 4% LIHTC deal underwriting. Auto-sized first mortgage, T/E bond + taxable blended sizing, eligible basis, DSCR, LTV, soft source layering, developer fee, construction interest, and a one-click GO&thinsp;/&thinsp;NO-GO summary driven by live HUD FY2026 income limits.
+      </div>
+      <div class="chips">
+        <span class="chip chip-em">9% &amp; 4% LIHTC</span>
+        <span class="chip chip-el">HUD FY2026</span>
+        <span class="chip chip-go">S&amp;U · DSCR · LTV</span>
+        <span class="chip chip-dm">Soft Sources</span>
+        <span class="chip chip-dm">Sensitivity</span>
+        <span class="chip chip-dm">Export</span>
+      </div>
+    </div>
+    <div class="tool-footer">
+      <span class="tool-cta-text">Open Tool</span>
+      <span class="tool-cta">Launch &rarr;</span>
+    </div>
+  </a>
+
+  <!-- GUIDE STRIP -->
+  <div class="guide-strip">
+    <span class="guide-label">Also available</span>
+    <a href="setup_guide.html" class="guide-link">
+      User Guide &amp; FAQ
+      <span class="guide-arr">&rarr;</span>
+    </a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--faint);margin-left:4px">Complete workflow walkthrough &middot; 15 min read</span>
+  </div>
+
+</div>
+
+<!-- ── DATA BAR ────────────────────────────────────── -->
+<div class="data-bar">
+  <span class="db-label">Data Sources</span>
+  <div class="db-sources">
+    <div class="db-src"><div class="db-pip" style="background:rgba(56,200,255,.7)"></div>HUD MTSP &mdash; FY2026 Income Limits</div>
+    <div class="db-src"><div class="db-pip" style="background:rgba(0,184,112,.7)"></div>HUD ArcGIS &mdash; FY2026 QCT &amp; DDA Polygons</div>
+    <div class="db-src"><div class="db-pip" style="background:rgba(212,132,26,.7)"></div>US Census Bureau Geocoder</div>
+    <div class="db-src"><div class="db-pip" style="background:rgba(159,122,234,.7)"></div>Claude AI via claude.ai</div>
+    <div class="db-src"><div class="db-pip" style="background:rgba(255,255,255,.3)"></div>RSMeans 2024 Location Factors</div>
+  </div>
+</div>
+
+<footer>
+  <span>LIHTC TOOLS</span>
+  <span>Affordable housing development analytics &middot; Built for underwriters</span>
+  <span>FY 2026</span>
+</footer>
+
+</body>
+</html>

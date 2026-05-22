@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LIHTC Scanner — 2026 QCT, DDA & Poverty</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#07111f;--surf:#0c1a2e;--panel:#0f2040;--border:#1a3356;--muted:#0d1e35;
+  --green:#10b981;--blue:#38bdf8;--amber:#f59e0b;--red:#f43f5e;--text:#dde8f5;--dim:#5e7a9c}
+body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--surf)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+#hdr{background:var(--surf);border-bottom:1px solid var(--border);padding:13px 24px;
+  display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100}
+#logo{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;letter-spacing:.07em}
+#logo span{color:var(--green)}
+#sub{font-family:'Fira Code',monospace;font-size:11px;color:var(--dim);letter-spacing:.05em}
+.vr{width:1px;height:20px;background:var(--border)}
+#ha{margin-left:auto;display:flex;gap:8px}
+.btn{padding:6px 16px;border-radius:6px;font-size:12px;font-weight:600;
+  font-family:'Barlow',sans-serif;cursor:pointer;border:none;transition:opacity .15s}
+.btn:hover{opacity:.82}
+.bp{background:var(--green);color:#000}
+.bg{background:transparent;border:1px solid var(--border);color:var(--dim)}
+#main{max-width:1120px;margin:0 auto;padding:36px 24px}
+.card{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:32px 36px}
+.slbl{font-size:11px;font-weight:700;color:var(--dim);letter-spacing:.12em;margin-bottom:22px}
+.step{display:flex;align-items:flex-start;gap:14px;padding:13px 0;border-bottom:1px solid var(--muted)}
+.step:last-child{border-bottom:none}
+.si{width:18px;flex-shrink:0;margin-top:2px;font-size:15px}
+.sl{font-size:13px;color:var(--dim)}.sl.on{color:var(--text);font-weight:600}
+.sn{font-family:'Fira Code',monospace;font-size:10px;color:var(--green);margin-top:3px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{display:inline-block;animation:spin 1.1s linear infinite;color:var(--amber)}
+/* chips */
+.chips{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px}
+.chip{background:var(--surf);border:1px solid var(--border);border-radius:8px;
+  padding:10px 18px;display:flex;align-items:center;gap:10px}
+.cdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.cv{font-family:'Fira Code',monospace;font-size:20px;font-weight:500;line-height:1}
+.cl{font-size:10px;color:var(--dim);margin-top:3px;letter-spacing:.06em}
+.sc{background:var(--surf);border:1px solid var(--border);border-radius:8px;
+  padding:10px 16px;text-align:center;min-width:82px}
+.sv{font-family:'Fira Code',monospace;font-size:24px;font-weight:500;line-height:1}
+.sll{font-size:9px;color:var(--dim);letter-spacing:.1em;margin-top:5px}
+/* mode banner */
+.mode-banner{border-radius:8px;padding:12px 18px;margin-bottom:20px;font-size:13px;display:flex;align-items:center;gap:10px}
+.mode-coords{background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.3);color:var(--blue)}
+.mode-geo{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);color:var(--green)}
+/* col mapping */
+.cmg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+@media(max-width:620px){.cmg{grid-template-columns:1fr}}
+.cr{display:flex;align-items:center;gap:10px;background:var(--panel);
+  border:1px solid var(--border);border-radius:8px;padding:10px 14px}
+.ck{font-size:10px;font-weight:700;color:var(--dim);width:90px;flex-shrink:0;letter-spacing:.05em}
+.cs{flex:1;background:var(--surf);border:1px solid var(--border);border-radius:6px;
+  padding:5px 10px;color:var(--text);font-family:'Fira Code',monospace;font-size:11px;cursor:pointer;outline:none}
+.cs option{background:var(--panel)}.cs:focus{border-color:var(--green)}
+.cok{color:var(--green);font-size:14px;flex-shrink:0}
+.cwn{color:var(--amber);font-size:14px;flex-shrink:0}
+.cdim{color:var(--dim);font-size:14px;flex-shrink:0}
+/* preview */
+.pvw{background:var(--panel);border:1px solid var(--border);border-radius:8px;
+  overflow:auto;max-height:130px;margin-bottom:18px}
+.pvw table{width:100%;border-collapse:collapse;font-size:11px}
+.pvw th{padding:6px 12px;background:var(--muted);text-align:left;font-size:9px;color:var(--dim);
+  letter-spacing:.08em;white-space:nowrap;font-weight:700;border-bottom:1px solid var(--border);position:sticky;top:0}
+.pvw td{padding:5px 12px;border-bottom:1px solid var(--muted);
+  font-family:'Fira Code',monospace;color:var(--dim);white-space:nowrap}
+.pvw .hl{color:var(--text)}.pvw .mt{color:var(--red);font-size:10px}
+/* progress */
+.pt{background:var(--panel);border-radius:4px;height:6px;overflow:hidden;
+  border:1px solid var(--border);margin-bottom:6px}
+.pf{height:100%;background:linear-gradient(90deg,var(--green),#34d399);border-radius:4px;transition:width .25s ease}
+.pm{display:flex;justify-content:space-between;font-size:11px;font-family:'Fira Code',monospace;color:var(--dim)}
+.pl{font-family:'Fira Code',monospace;font-size:11px;color:var(--dim);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:380px}
+/* tabs */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.tab{padding:5px 13px;border-radius:6px;font-size:12px;cursor:pointer;font-family:'Barlow',sans-serif;
+  border:1px solid var(--border);background:transparent;color:var(--dim);transition:all .15s}
+.tab.on{border-color:var(--green);background:rgba(16,185,129,.1);color:var(--green)}
+.fc{margin-left:auto;font-size:11px;color:var(--dim)}
+/* table */
+.tw{background:var(--surf);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.ts{overflow-x:auto;max-height:480px;overflow-y:auto}
+table.rt{width:100%;border-collapse:collapse;font-size:12px}
+table.rt thead tr{background:var(--panel);position:sticky;top:0;z-index:1}
+table.rt th{padding:10px 14px;text-align:left;font-size:9px;font-weight:700;
+  color:var(--dim);letter-spacing:.1em;white-space:nowrap;border-bottom:1px solid var(--border)}
+table.rt td{padding:8px 14px;border-bottom:1px solid var(--muted)}
+table.rt tbody tr:hover td{background:var(--panel)}
+.dn{color:var(--text);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dd{color:var(--dim);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dc{color:var(--dim);white-space:nowrap}.dm{font-family:'Fira Code',monospace;font-size:11px;color:var(--dim);white-space:nowrap}
+.ok{font-size:11px;color:var(--green)}.fail{font-size:11px;color:var(--red)}
+.bdg{display:inline-block;padding:2px 9px;border-radius:4px;font-size:10px;
+  font-family:'Fira Code',monospace;font-weight:600;letter-spacing:.06em}
+.warn{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);
+  border-radius:8px;padding:11px 16px;margin-bottom:14px;font-size:12px;color:var(--amber)}
+.ecard{background:var(--surf);border:1px solid rgba(244,63,94,.3);
+  border-radius:12px;padding:32px 36px;max-width:520px;margin:60px auto}
+.etitle{font-size:12px;font-weight:700;color:var(--red);letter-spacing:.1em;margin-bottom:12px}
+.foot{margin-top:12px;font-size:11px;color:var(--dim)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.fu{animation:fadeUp .3s ease}
+</style>
+</head>
+<body>
+<div id="hdr">
+  <div id="logo">LIHTC <span>SCANNER</span></div>
+  <div class="vr"></div>
+  <div id="sub">2026 · QCT · DDA · POVERTY · HUD ArcGIS · ACS 2019–2023</div>
+  <div id="ha"><a href="index.html" style="padding:5px 13px;border-radius:6px;font-size:12px;font-weight:600;font-family:'Barlow',sans-serif;border:1px solid #1a3356;color:#5e7a9c;text-decoration:none">← Home</a></div>
+</div>
+<div id="main"></div>
+<input type="file" id="fi" accept=".csv" style="display:none">
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+const QCT_URLS = [
+  'https://services.arcgis.com/VTyQ9soqVukalItT/arcgis/rest/services/QUALIFIED_CENSUS_TRACTS_2026/FeatureServer/0',
+  'https://services.arcgis.com/VTyQ9soqVukalItT/ArcGIS/rest/services/Qualified_Census_Tracts/FeatureServer/0',
+  'https://services.arcgis.com/VTyQ9soqVukalItT/arcgis/rest/services/Qualified_Census_Tracts_2026/FeatureServer/0',
+];
+const DDA_URLS = [
+  'https://services.arcgis.com/VTyQ9soqVukalItT/arcgis/rest/services/DIFFICULT_DEVELOPMENT_AREAS_2026/FeatureServer/0',
+  'https://services.arcgis.com/VTyQ9soqVukalItT/arcgis/rest/services/Difficult_Development_Areas_2026/FeatureServer/0',
+  'https://services.arcgis.com/VTyQ9soqVukalItT/arcgis/rest/services/Difficult_Development_Areas/FeatureServer/0',
+];
+// ESRI Living Atlas hosts ACS poverty data with CORS-friendly headers
+// (the Census Data API does not, so it can't be called from file:// pages).
+// Tract-level layer is /FeatureServer/2. Field B17020_calc_pctPovE is the
+// pre-calculated "Percent of Population below poverty level" — exactly what
+// the data.census.gov S1701 workflow surfaces. Auto-updates with each annual
+// ACS 5-year release.
+const POVERTY_URLS = [
+  'https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/ACS_Poverty_by_Age_Boundaries/FeatureServer/2',
+];
+const POVERTY_FIELD = 'B17020_calc_pctPovE';
+const CENSUS_GEO = 'https://geocoding.geo.census.gov/geocoder/geographies/onelineaddress';
+const FCC_API    = 'https://geo.fcc.gov/api/census/block/find';
+
+const ALIASES = {
+  name:    ['property name','name','property','listing name','title'],
+  street:  ['street','address','property address','street address','addr','full address','location'],
+  city:    ['city','city name','municipality','town'],
+  state:   ['state','state/province','st','province','state code'],
+  zip:     ['zip','zip code','zipcode','postal code','postalcode','zip_code','postal','postcode'],
+  lat:     ['latitude','lat','y','y_coord','lat_coord','latitude_dd','lat_wgs84','property latitude'],
+  lon:     ['longitude','lon','lng','x','x_coord','lon_coord','lng_coord','longitude_dd','lon_wgs84','long','property longitude'],
+  acres:   ['acres','acreage','lot size','lot size acres','lot size (acres)','land area','property size','land size','lot acres','total acres','site size'],
+  zoning:  ['zoning','zone','current zoning','property zoning','zoning code','existing zoning','zoning class','zoning classification'],
+};
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+const S = {
+  phase: 'init',   // init|ready|mapping|processing|done|error
+  steps: [
+    {id:'qct',     label:'Locating QCT 2026 service',      st:'wait', note:''},
+    {id:'dda',     label:'Locating DDA 2026 service',      st:'wait', note:''},
+    {id:'poverty', label:'Locating ACS Poverty service',   st:'wait', note:''},
+  ],
+  qctUrl: null, ddaUrl: null, povertyUrl: null,  // confirmed ArcGIS service URLs
+  qctSet: null,                      // Set<geoid> — only loaded in geocoding mode
+  csvRows:[], csvCols:[], colMap:{},
+  results:[], warnings:[], filter:'all', sort:null,  // sort: null | 'asc' | 'desc' (by poverty rate)
+  prog:{n:0,total:0,label:'',eta:''},
+  initErr:'',
+};
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const to = (ms,p) => Promise.race([p, new Promise((_,r) => setTimeout(() => r(new Error('Timeout')), ms))]);
+async function jf(url) {
+  const r = await to(15000, fetch(url));
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+const cleanZ = z => String(z??'').replace(/\.0$/,'').replace(/\D/g,'').padStart(5,'0').slice(0,5);
+const bdg = (t,c) => `<span class="bdg" style="background:${c}28;color:${c};border:1px solid ${c}50">${t}</span>`;
+const qB  = v => v==='Yes'?bdg('YES','#10b981'):v==='Unknown'?bdg('?','#f59e0b'):bdg('NO','#5e7a9c');
+const dB  = v => v==='Yes'?bdg('YES','#38bdf8'):v==='Unknown'?bdg('?','#f59e0b'):bdg('NO','#5e7a9c');
+// Poverty rate badge — color thresholds:
+//   ≤3%   = neon pink   (premium opportunity area)
+//   ≤10%  = green        (low poverty, opportunity area)
+//   ≤12%  = yellow       (borderline)
+//   >12%  = red          (high poverty)
+const pB  = v => {
+  if (v === '' || v == null) return `<span class="dm" style="color:var(--dim)">—</span>`;
+  const n = parseFloat(v);
+  if (!isFinite(n)) return `<span class="dm" style="color:var(--dim)">—</span>`;
+  const c = n <= 3  ? '#ff10f0'   // neon pink
+          : n <= 10 ? '#10b981'   // green
+          : n <= 12 ? '#facc15'   // yellow
+          :           '#ef4444';  // red
+  return `<span class="bdg" style="background:${c}28;color:${c};border:1px solid ${c}50">${n.toFixed(1)}%</span>`;
+};
+const etaS = n => { const s=n*.35; return s>90?`~${Math.ceil(s/60)} min left`:s>5?`~${Math.ceil(s)}s left`:'almost done'; };
+const si   = s => s==='done'?`<span style="color:var(--green)">✓</span>`
+                 :s==='run' ?`<span class="spin">◌</span>`
+                 :s==='err' ?`<span style="color:var(--red)">✕</span>`
+                 :`<span style="color:var(--border)">○</span>`;
+
+function detectCols(headers) {
+  const map = {};
+  for (const [key, aliases] of Object.entries(ALIASES)) {
+    map[key] = headers.find(h => aliases.includes(h.trim().toLowerCase())) || null;
+  }
+  return map;
+}
+
+function hasCoords(colMap, row) {
+  if (!colMap.lat || !colMap.lon) return false;
+  const lat = parseFloat(row[colMap.lat]);
+  const lon = parseFloat(row[colMap.lon]);
+  return isFinite(lat) && isFinite(lon);
+}
+
+// ── HUD SERVICES ──────────────────────────────────────────────────────────────
+// Probe: just confirm the service is reachable (fast)
+async function probeService(urls, stepId) {
+  setS(stepId,'run');
+  for (const url of urls) {
+    try {
+      const info = await to(9000, jf(`${url}?f=json`));
+      if (!info.error && info.type === 'Feature Layer') {
+        setS(stepId,'done','Service confirmed');
+        return url;
+      }
+    } catch(e) { console.warn('probe fail',url,e.message); }
+  }
+  throw new Error(`Cannot reach HUD ${stepId.toUpperCase()} service. Check that services.arcgis.com is accessible.`);
+}
+
+// Full load: paginate all GEOIDs (only for geocoding mode)
+async function loadQCTSet(url) {
+  // Find the GEOID field name
+  const info = await jf(`${url}?f=json`);
+  if (info.error || !Array.isArray(info.fields)) throw new Error('Bad QCT service response');
+  const fld = info.fields.find(f =>
+    /^(GEOID|GEOID20|GEOID10|geoid|TRACT)$/i.test(f.name) ||
+    (f.alias && /geoid/i.test(f.alias)) ||
+    f.name.toUpperCase().startsWith('GEOID')
+  )?.name;
+  if (!fld) throw new Error('No GEOID field found in QCT service');
+
+  const set = new Set();
+  let off = 0, more = true;
+  while (more) {
+    const p = await jf(`${url}/query?where=1%3D1&outFields=${encodeURIComponent(fld)}&resultOffset=${off}&resultRecordCount=2000&f=json`);
+    if (p.error) throw new Error(p.error.message);
+    if (!p.features?.length) break;
+    for (const f of p.features) {
+      const g = f.attributes?.[fld];
+      if (g) set.add(String(g).padStart(11,'0'));
+    }
+    more = !!p.exceededTransferLimit;
+    off += p.features.length;
+  }
+  if (!set.size) throw new Error('QCT service returned zero records');
+  return set;
+}
+
+// Spatial point query (used for both QCT and DDA when lat/lon available)
+async function pointInService(serviceUrl, lon, lat) {
+  const url = `${serviceUrl}/query?geometry=${lon}%2C${lat}&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&returnCountOnly=true&f=json`;
+  const d = await to(12000, jf(url));
+  if (d.error) throw new Error(d.error.message);
+  return d.count > 0;
+}
+
+// ── GEOCODING (address mode only) ─────────────────────────────────────────────
+async function geocodeAddr(street, city, state, zip) {
+  const z = cleanZ(zip);
+  const addr = [street, city, state, z].filter(Boolean).join(', ');
+  if (!street || !city) return null;
+  const d = await to(12000, jf(`${CENSUS_GEO}?address=${encodeURIComponent(addr)}&benchmark=Public_AR_Current&vintage=Census2020_Current&format=json`));
+  const m = d.result?.addressMatches?.[0];
+  if (!m) return null;
+  const t = m.geographies?.['Census Tracts']?.[0];
+  return {
+    geoid: t ? String(t.GEOID).padStart(11,'0') : null,
+    lat: m.coordinates?.y,
+    lon: m.coordinates?.x,
+  };
+}
+
+// Get census tract GEOID from lat/lon via FCC API (best-effort)
+async function geoidFromCoords(lat, lon) {
+  try {
+    const d = await to(8000, jf(`${FCC_API}?latitude=${lat}&longitude=${lon}&censusYear=2020&format=json`));
+    const fips = d?.Block?.FIPS;
+    return fips ? String(fips).slice(0,11).padStart(11,'0') : null;
+  } catch { return null; }
+}
+
+// ── POVERTY DATA (ESRI Living Atlas — ACS B17020 calc) ───────────────────────
+// Point-in-polygon query against the ACS poverty tracts layer. Identical
+// pattern to pointInService for QCT/DDA — same host (services.arcgis.com),
+// same CORS posture, works fine from file:// pages.
+async function pointPoverty(serviceUrl, lon, lat) {
+  const url = `${serviceUrl}/query`
+    + `?geometry=${lon}%2C${lat}`
+    + `&geometryType=esriGeometryPoint`
+    + `&inSR=4326`
+    + `&spatialRel=esriSpatialRelIntersects`
+    + `&outFields=${POVERTY_FIELD}`
+    + `&returnGeometry=false`
+    + `&f=json`;
+  const d = await to(12000, jf(url));
+  if (d.error) throw new Error(d.error.message);
+  const v = d.features?.[0]?.attributes?.[POVERTY_FIELD];
+  if (v == null) return null;
+  const n = parseFloat(v);
+  // Living Atlas sets negative sentinels (-4444, etc.) to null already and
+  // -5555 to zero. We still belt-and-suspenders the range check.
+  return (isFinite(n) && n >= 0 && n <= 100) ? n : null;
+}
+
+// ── PROCESSING ────────────────────────────────────────────────────────────────
+async function runScan() {
+  const { csvRows, colMap } = S;
+  const coordMode = colMap.lat && colMap.lon;
+
+  S.results = []; S.warnings = [];
+
+  // Geocoding mode needs the QCT set loaded first
+  if (!coordMode && !S.qctSet) {
+    S.phase = 'loading-qct';
+    S.prog  = { n:0, total:0, label:'Loading 2026 QCT designations…', eta:'' };
+    render();
+    try {
+      S.qctSet = await loadQCTSet(S.qctUrl);
+      setS('qct','done',`${S.qctSet.size.toLocaleString()} QCT tracts (2026)`);
+    } catch(e) {
+      S.initErr = e.message; S.phase = 'error'; render(); return;
+    }
+  }
+
+  S.phase = 'processing';
+  S.prog  = { n:0, total:csvRows.length, label:'Starting…', eta:'' };
+  render();
+
+  const out = [], warn = [];
+
+  for (let i = 0; i < csvRows.length; i++) {
+    const row = { ...csvRows[i] };
+    const label = row[colMap.name] || row[colMap.street] || `Row ${i+1}`;
+    S.prog = { n:i+1, total:csvRows.length, label, eta:etaS(csvRows.length - i) };
+    render();
+
+    // ── Coordinate mode: use lat/lon directly ─────────────────────────
+    if (coordMode) {
+      const lat = parseFloat(row[colMap.lat]);
+      const lon = parseFloat(row[colMap.lon]);
+
+      if (!isFinite(lat) || !isFinite(lon)) {
+        row['Census Tract GEOID'] = '';
+        row['Geocode Status']     = 'no coords';
+        row['QCT']                = 'Unknown';
+        row['DDA (Live)']         = 'Unknown';
+        row['Poverty Rate (%)']   = '';
+      } else {
+        // Run QCT, DDA, Poverty spatial queries + GEOID lookup in parallel
+        const [isQCT, isDDA, povRate, geoid] = await Promise.all([
+          pointInService(S.qctUrl, lon, lat).catch(e => { warn.push(`${label}: QCT — ${e.message}`); return null; }),
+          pointInService(S.ddaUrl, lon, lat).catch(e => { warn.push(`${label}: DDA — ${e.message}`); return null; }),
+          pointPoverty(S.povertyUrl, lon, lat).catch(e => { warn.push(`${label}: Poverty — ${e.message}`); return null; }),
+          geoidFromCoords(lat, lon),  // best-effort census tract GEOID
+        ]);
+        row['Census Tract GEOID'] = geoid ?? '';
+        row['Geocode Status']     = 'coordinates';
+        row['QCT']                = isQCT  === null ? 'Unknown' : isQCT  ? 'Yes' : 'No';
+        row['DDA (Live)']         = isDDA  === null ? 'Unknown' : isDDA  ? 'Yes' : 'No';
+        row['Poverty Rate (%)']   = povRate === null ? '' : povRate.toFixed(1);
+      }
+
+    // ── Geocoding mode: use address ────────────────────────────────────
+    } else {
+      let geo = null;
+      try {
+        geo = await geocodeAddr(
+          row[colMap.street] || '',
+          row[colMap.city]   || '',
+          row[colMap.state]  || '',
+          row[colMap.zip]    || ''
+        );
+      } catch(e) { warn.push(`${label}: geocode — ${e.message}`); }
+
+      if (geo) {
+        const isQCT = geo.geoid ? S.qctSet.has(geo.geoid) : null;
+        let isDDA = null, povRate = null;
+        if (geo.lat != null && geo.lon != null) {
+          // Run DDA and Poverty spatial queries in parallel
+          [isDDA, povRate] = await Promise.all([
+            pointInService(S.ddaUrl, geo.lon, geo.lat).catch(e => { warn.push(`${label}: DDA — ${e.message}`); return null; }),
+            pointPoverty(S.povertyUrl, geo.lon, geo.lat).catch(e => { warn.push(`${label}: Poverty — ${e.message}`); return null; }),
+          ]);
+        }
+        row['Census Tract GEOID'] = geo.geoid ?? '';
+        row['Geocode Status']     = 'matched';
+        row['QCT']                = isQCT === null ? 'Unknown' : isQCT ? 'Yes' : 'No';
+        row['DDA (Live)']         = isDDA === null ? 'Unknown' : isDDA ? 'Yes' : 'No';
+        row['Poverty Rate (%)']   = povRate === null ? '' : povRate.toFixed(1);
+      } else {
+        row['Census Tract GEOID'] = '';
+        row['Geocode Status']     = 'unmatched';
+        row['QCT']                = 'Unknown';
+        row['DDA (Live)']         = 'Unknown';
+        row['Poverty Rate (%)']   = '';
+      }
+    }
+
+    out.push(row);
+    await sleep(coordMode ? 50 : 75);  // coord mode is faster, needs less throttling
+  }
+
+  S.results = out; S.warnings = warn; S.phase = 'done'; render();
+}
+
+// ── DOWNLOAD ──────────────────────────────────────────────────────────────────
+function dlCSV() {
+  const a = Object.assign(document.createElement('a'), {
+    href:     URL.createObjectURL(new Blob([Papa.unparse(S.results)], { type:'text/csv' })),
+    download: `lihtc_qct_dda_${new Date().toISOString().slice(0,10)}.csv`,
+  });
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function setS(id,st,note='') { S.steps=S.steps.map(s=>s.id===id?{...s,st,note}:s); render(); }
+function getFiltered() {
+  const f = S.filter;
+  const list = S.results.filter(r => {
+    const pov = parseFloat(r['Poverty Rate (%)']);
+    return f==='qct'   ? r.QCT==='Yes' :
+           f==='dda'   ? r['DDA (Live)']==='Yes' :
+           f==='both'  ? r.QCT==='Yes' && r['DDA (Live)']==='Yes' :
+           f==='povlo' ? isFinite(pov) && pov <= 10 :
+           f==='povhi' ? isFinite(pov) && pov > 12 :
+           f==='miss'  ? ['unmatched','no coords'].includes(r['Geocode Status']) : true;
+  });
+  if (S.sort === 'asc' || S.sort === 'desc') {
+    const dir = S.sort === 'asc' ? 1 : -1;
+    // Missing/non-finite poverty values always sort to the bottom.
+    list.sort((a,b) => {
+      const pa = parseFloat(a['Poverty Rate (%)']);
+      const pb = parseFloat(b['Poverty Rate (%)']);
+      const fa = isFinite(pa), fb = isFinite(pb);
+      if (!fa && !fb) return 0;
+      if (!fa) return 1;
+      if (!fb) return -1;
+      return (pa - pb) * dir;
+    });
+  }
+  return list;
+}
+// Cycle sort: none → asc → desc → none (clicking POVERTY % header)
+function setSort() {
+  S.sort = S.sort === null ? 'asc' : S.sort === 'asc' ? 'desc' : null;
+  render();
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function render() {
+  const M=document.getElementById('main'), A=document.getElementById('ha');
+  const { phase, steps, results, warnings, prog, filter, csvCols, colMap, csvRows } = S;
+  const qN=results.filter(r=>r.QCT==='Yes').length;
+  const dN=results.filter(r=>r['DDA (Live)']==='Yes').length;
+  const bN=results.filter(r=>r.QCT==='Yes'&&r['DDA (Live)']==='Yes').length;
+  const pLoN=results.filter(r=>{const p=parseFloat(r['Poverty Rate (%)']);return isFinite(p)&&p<=10;}).length;
+  const pHiN=results.filter(r=>{const p=parseFloat(r['Poverty Rate (%)']);return isFinite(p)&&p>12;}).length;
+  const mN=results.filter(r=>r['Geocode Status']==='matched'||r['Geocode Status']==='coordinates').length;
+  const pct=prog.total?Math.round(prog.n/prog.total*100):0;
+  const rows=getFiltered();
+  const coordMode = colMap.lat && colMap.lon;
+
+  A.innerHTML = phase==='done'
+    ? `<button class="btn bg" onclick="resetScan()">New Scan</button><button class="btn bp" onclick="dlCSV()">↓ Export CSV</button>`
+    : '';
+
+  // ── INIT ──────────────────────────────────────────────────────────────
+  if (phase==='init') {
+    M.innerHTML=`<div class="fu" style="max-width:460px;margin:60px auto"><div class="card">
+      <div class="slbl">INITIALIZING DATA SOURCES</div>
+      ${steps.map(s=>`<div class="step">
+        <div class="si">${si(s.st)}</div>
+        <div><div class="sl ${s.st==='run'?'on':''}">${s.label}</div>
+        ${s.note?`<div class="sn">${s.note}</div>`:''}</div>
+      </div>`).join('')}
+      <div style="margin-top:20px;font-size:11px;color:var(--dim)">Locating HUD 2026 ArcGIS services…</div>
+    </div></div>`; return;
+  }
+
+  // ── ERROR ──────────────────────────────────────────────────────────────
+  if (phase==='error') {
+    M.innerHTML=`<div class="fu ecard">
+      <div class="etitle">ERROR</div>
+      <div style="font-size:13px;line-height:1.65;margin-bottom:14px">${S.initErr}</div>
+      <div style="font-size:12px;color:var(--dim);line-height:1.7;margin-bottom:20px">
+        The scanner requires access to HUD's ArcGIS services (services.arcgis.com) and the FCC geocoding API.
+        Verify your connection and retry.
+      </div>
+      <button class="btn bg" onclick="location.reload()">Retry</button>
+    </div>`; return;
+  }
+
+  // ── READY ──────────────────────────────────────────────────────────────
+  if (phase==='ready') {
+    M.innerHTML=`<div class="fu">
+      <div class="chips">
+        <div class="chip"><div class="cdot" style="background:var(--green)"></div><div>
+          <div class="cv" style="color:var(--green)">Ready</div>
+          <div class="cl">QCT 2026 SERVICE LOCATED</div>
+        </div></div>
+        <div class="chip"><div class="cdot" style="background:var(--blue)"></div><div>
+          <div class="cv" style="color:var(--blue)">Ready</div>
+          <div class="cl">DDA 2026 SERVICE LOCATED</div>
+        </div></div>
+        <div class="chip"><div class="cdot" style="background:#ff10f0"></div><div>
+          <div class="cv" style="color:#ff10f0">Ready</div>
+          <div class="cl">ACS POVERTY SERVICE LOCATED</div>
+        </div></div>
+        <div class="chip"><div class="cdot" style="background:var(--amber)"></div><div>
+          <div class="cv" style="color:var(--amber)">2026</div>
+          <div class="cl">DESIGNATION YEAR</div>
+        </div></div>
+      </div>
+      <div id="dz" style="border:2px dashed var(--border);border-radius:12px;padding:70px 40px;
+        text-align:center;cursor:pointer;background:var(--surf);transition:all .2s">
+        <div style="font-size:44px;margin-bottom:18px">📄</div>
+        <div style="font-size:16px;font-weight:600;margin-bottom:8px">Drop your Crexi CSV export here</div>
+        <div style="font-size:13px;color:var(--dim);max-width:400px;margin:0 auto">
+          or click to browse — auto-detects column names and uses lat/lon coordinates when available
+        </div>
+      </div>
+    </div>`; initDZ(); return;
+  }
+
+  // ── MAPPING ────────────────────────────────────────────────────────────
+  if (phase==='mapping') {
+    const ADDR_FIELDS = [
+      {k:'street', lbl:'STREET / ADDRESS', req:true},
+      {k:'city',   lbl:'CITY',             req:true},
+      {k:'state',  lbl:'STATE',            req:true},
+      {k:'zip',    lbl:'ZIP CODE',         req:false},
+      {k:'name',   lbl:'PROPERTY NAME',    req:false},
+    ];
+    const COORD_FIELDS = [
+      {k:'lat', lbl:'LATITUDE',  req:false},
+      {k:'lon', lbl:'LONGITUDE', req:false},
+    ];
+    const DETAIL_FIELDS = [
+      {k:'acres',   lbl:'ACRES / LOT SIZE', req:false},
+      {k:'zoning',  lbl:'ZONING',           req:false},
+    ];
+
+    const opts = k => ['(none)', ...csvCols].map(c =>
+      `<option value="${c}" ${c===(colMap[k]??'(none)')?'selected':''}>${c}</option>`
+    ).join('');
+
+    const allAddrOk = ADDR_FIELDS.filter(f=>f.req).every(f=>colMap[f.k]&&colMap[f.k]!=='(none)');
+    const hasLatLon = colMap.lat && colMap.lon;
+    const canScan   = hasLatLon || allAddrOk;
+
+    // Mode banner
+    const banner = hasLatLon
+      ? `<div class="mode-banner mode-coords">
+          <span style="font-size:18px">📍</span>
+          <div><strong>Coordinate mode detected</strong> — lat/lon columns found.
+          QCT and DDA will be checked via direct spatial query against HUD's 2026 polygons.
+          No geocoding needed.</div>
+         </div>`
+      : `<div class="mode-banner mode-geo">
+          <span style="font-size:18px">🗺</span>
+          <div><strong>Geocoding mode</strong> — addresses will be geocoded via US Census Bureau.
+          Add Latitude/Longitude columns below to use faster coordinate mode instead.</div>
+         </div>`;
+
+    // Preview using lat/lon or address cols
+    const pvCols = hasLatLon
+      ? ['lat','lon','name'].map(k=>colMap[k]).filter(Boolean)
+      : ['name','street','city','state','zip'].map(k=>colMap[k]).filter(Boolean);
+    const pvRows = csvRows.slice(0,3);
+    const pvHead = pvCols.map(c=>`<th>${c.toUpperCase()}</th>`).join('');
+    const pvBody = pvRows.map(r=>
+      `<tr>${pvCols.map(c=>`<td class="${r[c]?'hl':''}">${r[c]||'<span class="mt">EMPTY</span>'}</td>`).join('')}</tr>`
+    ).join('');
+
+    const fieldRow = f => {
+      const mapped = colMap[f.k] && colMap[f.k]!=='(none)';
+      const icon   = f.req ? (mapped?'<span class="cok">✓</span>':'<span class="cwn">!</span>')
+                           : (mapped?'<span class="cok">✓</span>':'<span class="cdim">—</span>');
+      return `<div class="cr">
+        <div class="ck">${f.req?'<span style="color:var(--red)">*</span> ':''}${f.lbl}</div>
+        <select class="cs" onchange="upMap('${f.k}',this.value)">${opts(f.k)}</select>
+        ${icon}
+      </div>`;
+    };
+
+    M.innerHTML=`<div class="fu" style="max-width:720px;margin:40px auto"><div class="card">
+      <div class="slbl">CONFIRM COLUMN MAPPING</div>
+      <div style="font-size:13px;color:var(--dim);line-height:1.6;margin-bottom:18px">
+        Detected <strong style="color:var(--text)">${csvRows.length.toLocaleString()} rows</strong>
+        and <strong style="color:var(--text)">${csvCols.length} columns</strong>.
+        Confirm the column assignments. <span style="color:var(--red)">*</span> = required for geocoding mode.
+      </div>
+
+      ${banner}
+
+      <div style="font-size:10px;font-weight:700;color:var(--dim);letter-spacing:.1em;margin-bottom:10px">
+        ADDRESS COLUMNS ${hasLatLon?'<span style="color:var(--dim);font-weight:400">(optional in coordinate mode)</span>':''}
+      </div>
+      <div class="cmg" style="margin-bottom:22px">${ADDR_FIELDS.map(fieldRow).join('')}</div>
+
+      <div style="font-size:10px;font-weight:700;color:var(--dim);letter-spacing:.1em;margin-bottom:10px">
+        COORDINATE COLUMNS <span style="color:var(--blue);font-weight:400">(enables faster spatial mode)</span>
+      </div>
+      <div class="cmg" style="margin-bottom:22px">${COORD_FIELDS.map(fieldRow).join('')}</div>
+
+      <div style="font-size:10px;font-weight:700;color:var(--dim);letter-spacing:.1em;margin-bottom:10px">
+        PROPERTY DETAILS <span style="color:var(--dim);font-weight:400">(optional pass-through columns)</span>
+      </div>
+      <div class="cmg" style="margin-bottom:22px">${DETAIL_FIELDS.map(fieldRow).join('')}</div>
+
+      ${pvCols.length?`
+        <div style="font-size:10px;font-weight:700;color:var(--dim);letter-spacing:.08em;margin-bottom:8px">DATA PREVIEW (first 3 rows)</div>
+        <div class="pvw"><table><thead><tr>${pvHead}</tr></thead><tbody>${pvBody}</tbody></table></div>
+      `:''}
+
+      ${!canScan?`<div class="warn" style="margin-bottom:16px">
+        ⚠ Either map Latitude+Longitude <em>or</em> map Street, City, and State to proceed.
+      </div>`:''}
+
+      <div style="display:flex;gap:10px;align-items:center">
+        <button class="btn bg" style="padding:6px 14px;font-size:12px" onclick="goReady()">← Back</button>
+        <button class="btn bp" style="padding:6px 18px;font-size:12px;${canScan?'':'opacity:.35;cursor:not-allowed'}"
+          onclick="${canScan?'runScan()':'void 0'}">
+          ${hasLatLon?'⚡ Scan with Coordinates':'Scan'} ${csvRows.length.toLocaleString()} Properties →
+        </button>
+        ${hasLatLon?`<span style="font-size:11px;color:var(--blue)">~${Math.ceil(csvRows.length*.35/60)} min est.</span>`:''}
+      </div>
+    </div></div>`; return;
+  }
+
+  // ── LOADING QCT (geocoding mode pre-step) ─────────────────────────────
+  if (phase==='loading-qct') {
+    M.innerHTML=`<div class="fu" style="max-width:520px;margin:60px auto"><div class="card">
+      <div class="slbl">LOADING QCT DATA</div>
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+        <span class="spin" style="font-size:20px">◌</span>
+        <span style="font-family:'Fira Code',monospace;font-size:13px;color:var(--dim)">${prog.label}</span>
+      </div>
+      <div style="font-size:12px;color:var(--dim)">
+        Loading all 2026 QCT census tract designations from HUD ArcGIS for geocoding mode…
+      </div>
+    </div></div>`; return;
+  }
+
+  // ── PROCESSING ──────────────────────────────────────────────────────────
+  if (phase==='processing') {
+    const coordMode2 = S.colMap.lat && S.colMap.lon;
+    M.innerHTML=`<div class="fu" style="max-width:520px;margin:60px auto"><div class="card">
+      <div class="slbl">SCANNING PROPERTIES</div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:8px">
+        <span style="color:var(--dim)">${prog.n.toLocaleString()} of ${prog.total.toLocaleString()}</span>
+        <span style="font-family:'Fira Code',monospace;color:var(--green)">${pct}%</span>
+      </div>
+      <div class="pt"><div class="pf" style="width:${pct}%"></div></div>
+      <div class="pm" style="margin-bottom:18px">
+        <span class="pl">→ ${prog.label}</span>
+        <span>${prog.eta}</span>
+      </div>
+      <div style="font-size:12px;color:var(--dim);line-height:1.7;padding-top:14px;border-top:1px solid var(--muted)">
+        ${coordMode2
+          ? '⚡ Coordinate mode — QCT, DDA &amp; Poverty spatial queries from lat/lon · FCC census tract lookup'
+          : 'Geocoding via US Census Bureau · QCT from preloaded set · DDA &amp; Poverty spatial queries'}
+      </div>
+    </div></div>`; return;
+  }
+
+  // ── DONE ────────────────────────────────────────────────────────────────
+  if (phase==='done') {
+    const wH = warnings.length
+      ? `<div class="warn">⚠ <strong>${warnings.length} issue${warnings.length===1?'':'s'}</strong> during scanning — affected rows show Unknown.</div>`
+      : '';
+    const fBtns = [
+      {id:'all',   l:`All (${results.length})`},
+      {id:'qct',   l:`QCT (${qN})`},
+      {id:'dda',   l:`DDA (${dN})`},
+      {id:'both',  l:`QCT+DDA (${bN})`},
+      {id:'povlo', l:`Low Pov ≤10% (${pLoN})`},
+      {id:'povhi', l:`High Pov >12% (${pHiN})`},
+      {id:'miss',  l:`Failed (${results.length-mN})`},
+    ].map(f=>`<button class="tab ${filter===f.id?'on':''}" onclick="setF('${f.id}')">${f.l}</button>`).join('');
+
+    const nm=colMap.name, st=colMap.street, ct=colMap.city, ss=colMap.state;
+    const ac=colMap.acres, zn=colMap.zoning;
+    // Format acreage: numeric → "3.42 ac"; passthrough strings as-is.
+    const fmtAc = v => {
+      if (v === '' || v == null) return '—';
+      const n = parseFloat(String(v).replace(/,/g,''));
+      return isFinite(n) ? `${n.toFixed(2)} ac` : String(v);
+    };
+    const totalCols = 8 + (ac?1:0) + (zn?1:0);
+    const tR = rows.length===0
+      ? `<tr><td colspan="${totalCols}" style="padding:36px;text-align:center;color:var(--dim)">No properties match this filter</td></tr>`
+      : rows.map(r=>`<tr>
+          <td class="dn" title="${r[nm]||''}">${r[nm]||'—'}</td>
+          <td class="dd">${(st&&r[st])||'—'}</td>
+          <td class="dc">${(ct&&r[ct])||''}${ss&&r[ss]?', '+r[ss]:''}</td>
+          ${ac?`<td class="dm" style="color:var(--text)">${fmtAc(r[ac])}</td>`:''}
+          ${zn?`<td class="dc">${r[zn]||'—'}</td>`:''}
+          <td>${qB(r.QCT)}</td>
+          <td>${dB(r['DDA (Live)'])}</td>
+          <td>${pB(r['Poverty Rate (%)'])}</td>
+          <td class="dm">${r['Census Tract GEOID']||'—'}</td>
+          <td>${r['Geocode Status']==='matched'||r['Geocode Status']==='coordinates'
+            ?`<span class="ok">● ${r['Geocode Status']}</span>`
+            :`<span class="fail">○ ${r['Geocode Status']}</span>`}</td>
+        </tr>`).join('');
+
+    M.innerHTML=`<div class="fu">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px">
+        ${[['Total',results.length,'var(--text)'],['Scanned',mN,'var(--text)'],
+           ['QCT',qN,'var(--green)'],['DDA',dN,'var(--blue)'],['QCT+DDA',bN,'var(--amber)'],
+           ['Pov ≤10%',pLoN,pLoN>0?'#10b981':'var(--dim)'],
+           ['Pov >12%',pHiN,pHiN>0?'#ef4444':'var(--dim)'],
+           ['Failed',results.length-mN,results.length-mN>0?'var(--red)':'var(--dim)']
+          ].map(([l,v,c])=>`<div class="sc"><div class="sv" style="color:${c}">${v}</div><div class="sll">${l.toUpperCase()}</div></div>`
+        ).join('')}
+      </div>
+      ${wH}
+      <div class="tabs">${fBtns}<span class="fc">${rows.length.toLocaleString()} showing</span></div>
+      <div class="tw"><div class="ts">
+        <table class="rt">
+          <thead><tr>
+            <th style="min-width:180px">PROPERTY</th>
+            <th style="min-width:150px">STREET</th>
+            <th style="min-width:110px">CITY/STATE</th>
+            ${ac?`<th style="min-width:80px">ACRES</th>`:''}
+            ${zn?`<th style="min-width:90px">ZONING</th>`:''}
+            <th style="min-width:65px">QCT</th>
+            <th style="min-width:65px">DDA</th>
+            <th style="min-width:90px;cursor:pointer;user-select:none" onclick="setSort()" title="Click to sort by poverty rate (asc → desc → off)">POVERTY %${S.sort==='asc'?' <span style="color:var(--green)">▲</span>':S.sort==='desc'?' <span style="color:var(--green)">▼</span>':' <span style="color:var(--dim);opacity:.5">⇅</span>'}</th>
+            <th style="min-width:135px">CENSUS TRACT GEOID</th>
+            <th style="min-width:105px">STATUS</th>
+          </tr></thead>
+          <tbody>${tR}</tbody>
+        </table>
+      </div></div>
+      <div class="foot">Source: HUD 2026 QCT/DDA via ArcGIS · 2020 Census boundaries · FCC census tract API · ESRI Living Atlas ACS 5-Year (table B17020) for poverty rate · Acres/Zoning passed through from source CSV</div>
+    </div>`;
+  }
+}
+
+// ── EVENTS ────────────────────────────────────────────────────────────────────
+function initDZ() {
+  const dz=document.getElementById('dz'), fi=document.getElementById('fi');
+  if (!dz) return;
+  const ov = () => { dz.style.borderColor='var(--green)'; dz.style.background='rgba(16,185,129,.06)'; };
+  const ou = () => { dz.style.borderColor='var(--border)'; dz.style.background='var(--surf)'; };
+  dz.addEventListener('dragover',  e => { e.preventDefault(); ov(); });
+  dz.addEventListener('dragleave', ou);
+  dz.addEventListener('drop',      e => { e.preventDefault(); ou(); openCSV(e.dataTransfer.files[0]); });
+  dz.addEventListener('click',     () => fi.click());
+  fi.addEventListener('change',    e => { openCSV(e.target.files?.[0]); fi.value=''; });
+}
+
+function openCSV(file) {
+  if (!file?.name.endsWith('.csv')) return;
+
+  // Parse as raw arrays first so we can detect the real header row.
+  // Crexi exports have 1-2 junk rows at the top (blank + count) before the actual headers.
+  Papa.parse(file, {
+    header: false,
+    skipEmptyLines: false,   // keep blank rows so indices are stable
+    complete(res) {
+      const raw = res.data;
+
+      // Cells in a real header row will match these known column names
+      const HINTS = new Set([
+        'property link','property name','property status','address','street','city','state',
+        'zip','zipcode','latitude','longitude','lat','lon','lng','type','name',
+        'price','sqft','units','acres','lot size'
+      ]);
+
+      // Score each row: count how many cells match known column names
+      let headerIdx = 0, bestScore = 0;
+      for (let i = 0; i < Math.min(10, raw.length); i++) {
+        const score = raw[i].filter(c => HINTS.has(String(c||'').trim().toLowerCase())).length;
+        if (score > bestScore) { bestScore = score; headerIdx = i; }
+      }
+
+      // Build headers array (trim whitespace, keep original casing)
+      const headers = raw[headerIdx].map(h => String(h ?? '').trim());
+
+      // Convert data rows to objects
+      const objRows = raw.slice(headerIdx + 1)
+        .filter(r => r.some(c => c != null && String(c).trim() !== ''))
+        .map(row => {
+          const obj = {};
+          headers.forEach((h, i) => { if (h) obj[h] = row[i] != null ? String(row[i]) : ''; });
+          return obj;
+        });
+
+      S.csvRows = objRows;
+      S.csvCols = headers.filter(h => h);
+      S.colMap  = detectCols(S.csvCols);
+      S.phase   = 'mapping';
+      render();
+    }
+  });
+}
+
+function upMap(k,v) { S.colMap[k] = v==='(none)'?null:v; render(); }
+function goReady()   { S.phase='ready'; render(); }
+function resetScan() { S.results=[]; S.warnings=[]; S.filter='all'; S.sort=null; S.qctSet=null; S.phase='ready'; render(); }
+function setF(f)     { S.filter=f; render(); }
+
+// ── BOOT ──────────────────────────────────────────────────────────────────────
+render();
+(async () => {
+  try {
+    const [qctUrl, ddaUrl, povertyUrl] = await Promise.all([
+      probeService(QCT_URLS, 'qct'),
+      probeService(DDA_URLS, 'dda'),
+      probeService(POVERTY_URLS, 'poverty'),
+    ]);
+    S.qctUrl     = qctUrl;
+    S.ddaUrl     = ddaUrl;
+    S.povertyUrl = povertyUrl;
+    S.phase      = 'ready';
+    render();
+  } catch(e) {
+    S.initErr = e.message;
+    S.phase   = 'error';
+    render();
+  }
+})();
+</script>
+</body>
+</html>
